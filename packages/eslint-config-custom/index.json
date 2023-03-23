@@ -1,0 +1,17 @@
+{
+  "extends": [
+    "google",
+    "turbo",
+    "prettier",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["import", "simple-import-sort", "prettier", "@typescript-eslint"],
+  "rules": {
+    "prettier/prettier": ["error"],
+    "simple-import-sort/imports": "error",
+    "require-jsdoc": "off",
+    "valid-jsdoc": "off"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "extends": "tsconfig/node16.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "rootDir": ".",
+    "outDir": "build",
+    "target": "es2017"
+  },
+  "compileOnSave": true,
+  "include": ["src"]
+}

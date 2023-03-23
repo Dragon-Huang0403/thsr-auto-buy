@@ -1,0 +1,40 @@
+{
+  "name": "database",
+  "version": "1.0.0",
+  "license": "MIT",
+  "main": "./build/index.js",
+  "module": "./build/index.mjs",
+  "types": "./build/index.d.ts",
+  "files": [
+    "build/**"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "run:db": "supabase start",
+    "clean": "rimraf .turbo node_modules build ./supabase/.branches",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:seed": "tsx src/seed.ts",
+    "dev": "tsup --watch",
+    "format": "prisma format",
+    "generate": "prisma generate",
+    "lint": "eslint \"src/**/*.ts\"",
+    "prebuild": "npm run generate",
+    "predev": "npm run generate",
+    "studio": "prisma studio"
+  },
+  "dependencies": {
+    "@prisma/client": "^3.10.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.12.0",
+    "eslint-config-custom": "workspace:*",
+    "prisma": "^4.11.0",
+    "supabase": "^1.45.2",
+    "tsconfig": "workspace:*",
+    "tsup": "^5.11.13",
+    "tsx": "^3.12.6",
+    "typescript": "^5.0.2"
+  }
+}
