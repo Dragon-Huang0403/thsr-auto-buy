@@ -1,4 +1,5 @@
-// This is your Prisma schema file,
+// This is your Prisma schema file
+
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 datasource db {
@@ -10,9 +11,92 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
+model Reservation {
+  id             Int           @id @default(autoincrement())
+  startStation   Station
+  endStation     Station
+  ticketDate     DateTime
+  bookDate       DateTime      @db.Date
+  bookingMethod  BookingMethod
+  trainNo        String
+  carType        CarType
+  seatType       SeatType
+  taiwanId       String
+  email          String
+  phone          String
+  adultTicket    Int           @db.SmallInt
+  childTicket    Int           @db.SmallInt
+  disabledTicket Int           @db.SmallInt
+  elderTicket    Int           @db.SmallInt
+  collegeTicket  Int           @db.SmallInt
+  memberType     MemberType
+  isDeleted      Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @default(now()) @updatedAt
+  ticketResult   TicketResult?
+  ticketErrors   TicketError[]
+}
+
+model TicketResult {
+  id            Int         @id @default(autoincrement())
+  ticketId      String
+  trainId       String
+  startTime     String
+  endTime       String
+  duration      String
+  totalPrice    Int
+  creatdAt      DateTime    @default(now())
+  reservation   Reservation @relation(fields: [reservationId], references: [id])
+  reservationId Int         @unique
+}
+
+model TicketError {
+  id            Int             @id @default(autoincrement())
+  message       String
+  errorType     TicketErrorType
+  createdAt     DateTime        @default(now())
+  reservation   Reservation     @relation(fields: [reservationId], references: [id])
+  reservationId Int
+}
+
+enum TicketErrorType {
+  solvingCaptchaWrong
+  internalServerError
+  unkwown
+}
+
+enum Station {
+  NanGang
+  TaiPei
+  BanQiao
+  TaoYuan
+  XinZhu
+  MiaoLi
+  TaiZhong
+  ZhangHua
+  YunLin
+  JiaYi
+  TaiNan
+  ZuoYing
+}
+
+enum BookingMethod {
+  trainNo
+  time
+}
+
+enum CarType {
+  Standard
+  Business
+}
+
+enum SeatType {
+  NoRequired
+  WindowSeat
+  AisleSeat
+}
+
+enum MemberType {
+  NotMember
+  Member
 }

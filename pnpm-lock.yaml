@@ -113,8 +113,10 @@ importers:
       tsup: ^5.11.13
       tsx: ^3.12.6
       typescript: ^5.0.2
+      zod: ^3.21.4
     dependencies:
       '@prisma/client': 3.15.2_prisma@4.11.0
+      zod: 3.21.4
     devDependencies:
       eslint: 8.36.0
       eslint-config-custom: link:../eslint-config-custom
