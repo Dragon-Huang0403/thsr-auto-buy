@@ -12,6 +12,7 @@
     "prettier/prettier": ["error"],
     "simple-import-sort/imports": "error",
     "require-jsdoc": "off",
-    "valid-jsdoc": "off"
+    "valid-jsdoc": "off",
+    "spaced-comment": ["error", "always", {"markers": ["/"]}]
   }
 }
