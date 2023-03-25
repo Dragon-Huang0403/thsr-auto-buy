@@ -1,0 +1,9 @@
+{
+  "extends": "tsconfig/node16.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "build"
+  },
+  "include": ["src/*.ts"],
+  "exclude": ["node_modules"]
+}
