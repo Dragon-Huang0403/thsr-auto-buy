@@ -69,6 +69,14 @@ model Discount {
   @@unique([type, trainNo, date])
 }
 
+model SpecialBookDay {
+  name         String
+  startDate    DateTime @unique
+  endDate      DateTime @unique
+  startBookDay DateTime @unique
+  createdAt    DateTime @default(now())
+}
+
 enum DiscountType {
   earlyBird
   college
