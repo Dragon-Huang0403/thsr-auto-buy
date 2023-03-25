@@ -1,0 +1,27 @@
+{
+  "name": "taiwan-id",
+  "version": "1.0.0",
+  "main": "build/src/index.js",
+  "types": "build/src/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:dev": "vitest",
+    "test:ui": "vitest --ui",
+    "clean": "rimraf .turbo node_modules build",
+    "lint": "run-p lint:style lint:type",
+    "lint:style": "eslint --ext .js,.ts src",
+    "lint:type": "tsc --noEmit",
+    "lint-fix": "pnpm lint:style --fix"
+  },
+  "devDependencies": {
+    "@vitest/ui": "^0.29.7",
+    "eslint": "^8.12.0",
+    "eslint-config-custom": "workspace:*",
+    "tsconfig": "workspace:*",
+    "tsx": "^3.12.6",
+    "typescript": "^5.0.2",
+    "vite": "^4.1.2",
+    "vitest": "^0.28.5"
+  }
+}

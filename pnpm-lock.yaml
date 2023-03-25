@@ -183,6 +183,26 @@ importers:
     devDependencies:
       typescript: 5.0.2
 
+  packages/taiwan-id:
+    specifiers:
+      '@vitest/ui': ^0.29.7
+      eslint: ^8.12.0
+      eslint-config-custom: workspace:*
+      tsconfig: workspace:*
+      tsx: ^3.12.6
+      typescript: ^5.0.2
+      vite: ^4.1.2
+      vitest: ^0.28.5
+    devDependencies:
+      '@vitest/ui': 0.29.7
+      eslint: 8.36.0
+      eslint-config-custom: link:../eslint-config-custom
+      tsconfig: link:../tsconfig
+      tsx: 3.12.6
+      typescript: 5.0.2
+      vite: 4.2.1
+      vitest: 0.28.5_@vitest+ui@0.29.7
+
   packages/template:
     specifiers:
       '@vitest/ui': ^0.29.7
