@@ -1,36 +1,24 @@
 // import type {User} from '@prisma/client';
 
+import {crawlDiscounts} from 'crawler';
+
 import {prisma} from '.';
 
-// const DEFAULT_USERS = [
-//   // Add your own user to pre-populate the database with
-//   {
-//     name: 'Tim Apple',
-//     email: 'tim@apple.com',
-//   },
-// ] as Array<Partial<User>>;
+async function seedDiscount() {
+  await prisma.discount.deleteMany({});
+  const discounts = await crawlDiscounts();
+  await prisma.discount.createMany({data: discounts});
+  console.log(`Seed ${discounts.length} discounts`);
+}
 
-(async () => {
+async function main() {
   try {
-    // await Promise.all(
-    //   DEFAULT_USERS.map(user =>
-    //     prisma.user.upsert({
-    //       where: {
-    //         email: user.email as string,
-    //       },
-    //       update: {
-    //         ...user,
-    //       },
-    //       create: {
-    //         ...user,
-    //       },
-    //     }),
-    //   ),
-    // );
+    await seedDiscount();
   } catch (error) {
-    console.error(error);
+    console.error(JSON.stringify(error));
     process.exit(1);
-  } finally {
-    await prisma.$disconnect();
   }
-})();
+  await prisma.$disconnect();
+}
+
+main();

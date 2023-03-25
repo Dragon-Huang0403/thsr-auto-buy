@@ -137,7 +137,6 @@ importers:
     specifiers:
       '@prisma/client': ^3.10.0
       crawler: workspace:*
-      date-fns: ^2.29.3
       eslint: ^8.12.0
       eslint-config-custom: workspace:*
       prisma: ^4.11.0
@@ -152,7 +151,6 @@ importers:
       zod: 3.21.4
     devDependencies:
       crawler: link:../crawler
-      date-fns: 2.29.3
       eslint: 8.36.0
       eslint-config-custom: link:../eslint-config-custom
       prisma: 4.11.0
@@ -2018,6 +2016,7 @@ packages:
   /date-fns/2.29.3:
     resolution: {integrity: sha512-dDCnyH2WnnKusqvZZ6+jA1O51Ibt8ZMRNkDZdyAyK4YfbDwa/cEmuztzG5pk6hqlp9aSBPYcjOlktquahGwGeA==}
     engines: {node: '>=0.11'}
+    dev: false
 
   /debug/2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}

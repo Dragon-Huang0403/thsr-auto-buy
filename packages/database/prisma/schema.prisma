@@ -18,7 +18,7 @@ model Reservation {
   ticketDate     DateTime
   bookDate       DateTime      @db.Date
   bookingMethod  BookingMethod
-  trainNo        String
+  trainNo        Int
   carType        CarType
   seatType       SeatType
   taiwanId       String
@@ -40,7 +40,7 @@ model Reservation {
 model TicketResult {
   id            Int         @id @default(autoincrement())
   ticketId      String
-  trainId       String
+  trainNo       Int
   startTime     String
   endTime       String
   duration      String
@@ -59,8 +59,24 @@ model TicketError {
   reservationId Int
 }
 
+model Discount {
+  type             DiscountType
+  trainNo          Int
+  date             DateTime
+  minDiscountRatio Int
+  createdAt        DateTime     @default(now())
+
+  @@unique([type, trainNo, date])
+}
+
+enum DiscountType {
+  earlyBird
+  college
+}
+
 enum TicketErrorType {
-  solvingCaptchaWrong
+  solvingCaptchaWrongy
+
   internalServerError
   unkwown
 }
