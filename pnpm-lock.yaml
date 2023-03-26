@@ -232,11 +232,20 @@ importers:
       vite: 4.2.1
       vitest: 0.28.5_@vitest+ui@0.29.7
 
-  packages/template:
+  packages/ticket-flow:
     specifiers:
+      '@types/tough-cookie': ^4.0.2
       '@vitest/ui': ^0.29.7
+      date-fns: ^2.29.3
+      date-fns-tz: ^2.0.0
+      dotenv: ^16.0.3
       eslint: ^8.12.0
       eslint-config-custom: workspace:*
+      got: ^12.6.0
+      node-html-parser: ^6.1.5
+      taiwan-id: workspace:*
+      tdx-api: workspace:*
+      tough-cookie: ^4.1.2
       tsconfig: workspace:*
       tsx: ^3.12.6
       typescript: ^5.0.2
@@ -244,11 +253,20 @@ importers:
       vitest: ^0.28.5
       zod: ^3.21.4
     dependencies:
+      date-fns: 2.29.3
+      date-fns-tz: 2.0.0_date-fns@2.29.3
+      dotenv: 16.0.3
+      got: 12.6.0
+      node-html-parser: 6.1.5
+      tough-cookie: 4.1.2
       zod: 3.21.4
     devDependencies:
+      '@types/tough-cookie': 4.0.2
       '@vitest/ui': 0.29.7
       eslint: 8.36.0
       eslint-config-custom: link:../eslint-config-custom
+      taiwan-id: link:../taiwan-id
+      tdx-api: link:../tdx-api
       tsconfig: link:../tsconfig
       tsx: 3.12.6
       typescript: 5.0.2
@@ -1235,6 +1253,10 @@ packages:
       '@types/mime': 3.0.1
       '@types/node': 18.15.5
 
+  /@types/tough-cookie/4.0.2:
+    resolution: {integrity: sha512-Q5vtl1W5ue16D+nIaW8JWebSSraJVlK+EthKn7e7UcD4KWsaSJ8BqGPXNaPghgtcn/fhvrN17Tv8ksUsQpiplw==}
+    dev: true
+
   /@typescript-eslint/eslint-plugin/5.56.0_2hcjazgfnbtq42tcc73br2vup4:
     resolution: {integrity: sha512-ZNW37Ccl3oMZkzxrYDUX4o7cnuPgU+YrcaYXzsRtLB16I1FR5SHMqga3zGsaSliZADCWo2v8qHWqAYIj8nWCCg==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
@@ -1708,7 +1730,7 @@ packages:
   /axios/0.27.2_debug@4.3.4:
     resolution: {integrity: sha512-t+yRIyySRTp/wua5xEr+z1q60QmLq8ABsS5O9Me1AsE5dfKqgnCFzwiCZZ/cGNd1lq4/7akDWMxdhVlucjmnOQ==}
     dependencies:
-      follow-redirects: 1.15.2_debug@4.3.4
+      follow-redirects: 1.15.2
       form-data: 4.0.0
     transitivePeerDependencies:
       - debug
@@ -2069,6 +2091,14 @@ packages:
     resolution: {integrity: sha512-0R9ikRb668HB7QDxT1vkpuUBtqc53YyAwMwGeUFKRojY/NWKvdZ+9UYtRfGmhqNbRkTSVpMbmyhXipFFv2cb/A==}
     engines: {node: '>= 12'}
     dev: true
+
+  /date-fns-tz/2.0.0_date-fns@2.29.3:
+    resolution: {integrity: sha512-OAtcLdB9vxSXTWHdT8b398ARImVwQMyjfYGkKD2zaGpHseG2UPHbHjXELReErZFxWdSLph3c2zOaaTyHfOhERQ==}
+    peerDependencies:
+      date-fns: '>=2.0.0'
+    dependencies:
+      date-fns: 2.29.3
+    dev: false
 
   /date-fns/2.29.3:
     resolution: {integrity: sha512-dDCnyH2WnnKusqvZZ6+jA1O51Ibt8ZMRNkDZdyAyK4YfbDwa/cEmuztzG5pk6hqlp9aSBPYcjOlktquahGwGeA==}
@@ -3219,19 +3249,6 @@ packages:
     peerDependenciesMeta:
       debug:
         optional: true
-    dev: false
-
-  /follow-redirects/1.15.2_debug@4.3.4:
-    resolution: {integrity: sha512-VQLG33o04KaQ8uYi2tVNbdrWp1QWxNNea+nmIB4EVM28v0hmP17z7aG1+wAkNzVq4KeXTq3221ye5qTJP91JwA==}
-    engines: {node: '>=4.0'}
-    peerDependencies:
-      debug: '*'
-    peerDependenciesMeta:
-      debug:
-        optional: true
-    dependencies:
-      debug: 4.3.4
-    dev: true
 
   /for-each/0.3.3:
     resolution: {integrity: sha512-jqYfLp7mo9vIyQf8ykW2v7A+2N4QjeCeI5+Dz9XraiO1ign81wjiH7Fb9vSOWvQfNtmSa4H2RoQTrrXivdUZmw==}
