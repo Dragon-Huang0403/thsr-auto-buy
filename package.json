@@ -2,10 +2,22 @@
   "name": "thsr-auto-buy",
   "version": "0.0.0",
   "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*"
+    ],
+    "nohoist": [
+      "**/prisma",
+      "**/prisma/**",
+      "**/@prisma/client",
+      "**/@prisma/client/**"
+    ]
+  },
+  "prisma": {
+    "schema": "packages/database/prisma/schema.prisma",
+    "seed": "tsx packages/database/src/seed.ts"
+  },
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",

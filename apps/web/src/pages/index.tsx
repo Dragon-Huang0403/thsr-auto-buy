@@ -1,7 +1,13 @@
 import {zodResolver} from '@hookform/resolvers/zod';
 import {Button, styled, TextField, Typography} from '@mui/material';
 import {DatePicker, TimePicker} from '@mui/x-date-pickers';
-import {BookingMethod, CarType, MemberType, SeatType, Station} from 'database';
+import {
+  BookingMethod,
+  CarType,
+  MemberType,
+  SeatType,
+  Station,
+} from '@prisma/client';
 import React from 'react';
 import {Controller, useForm} from 'react-hook-form';
 import {z} from 'zod';
@@ -17,6 +23,7 @@ import {
   ticketOptions,
 } from '~/utils/constants';
 import {reservationSchema} from '~/utils/schema';
+import {trpc} from '~/utils/trpc';
 
 import Radios from '../components/Radios';
 import Select from '../components/Select';
@@ -56,6 +63,8 @@ const IndexPage: NextPageWithLayout = () => {
     resolver: zodResolver(reservationSchema),
   });
 
+  const addReservation = trpc.reservation.add.useMutation();
+
   const onSubmit = handleSubmit(data => {
     const isBookByTrainNo = data.bookingMethod === BookingMethod.trainNo;
     const isTrainNoAllDigit = /^\d{3,4}$/.test(data.trainNo);
@@ -63,7 +72,7 @@ const IndexPage: NextPageWithLayout = () => {
       setError('trainNo', {message: '車號錯誤'});
       return;
     }
-    console.log(data);
+    addReservation.mutate(data);
   });
   const bookingMethod = watch('bookingMethod');
   return (
@@ -234,7 +243,7 @@ const IndexPage: NextPageWithLayout = () => {
         )}
       />
       <Controller
-        name="carType"
+        name="memberType"
         control={control}
         render={({field}) => (
           <Radios label="是否為高鐵會員" {...field} options={memberOptions} />

@@ -1,4 +1,10 @@
-import {BookingMethod, CarType, MemberType, SeatType, Station} from 'database';
+import {
+  BookingMethod,
+  CarType,
+  MemberType,
+  SeatType,
+  Station,
+} from '@prisma/client';
 
 export const stations = [
   Station.NanGang,
