@@ -8,21 +8,8 @@
   "files": [
     "build/**"
   ],
-  "prisma": {
-    "seed": "tsx src/seed.ts"
-  },
-  "exports": {
-    ".": "./build"
-  },
-  "typesVersions": {
-    "*": {
-      ".": [
-        "build"
-      ]
-    }
-  },
   "scripts": {
-    "build": "pnpm generate",
+    "build": "pnpm generate && tsup",
     "run:db": "supabase start",
     "clean": "rimraf .turbo node_modules build ./supabase/.branches",
     "db:migrate:deploy": "prisma migrate deploy",
@@ -38,16 +25,16 @@
     "postinstall": "pnpm generate"
   },
   "dependencies": {
-    "@prisma/client": "^3.10.0",
-    "zod": "^3.21.4"
+    "@prisma/client": "^3.10.0"
   },
   "devDependencies": {
+    "prisma": "^4.11.0",
     "crawler": "workspace:*",
     "eslint": "^8.12.0",
     "eslint-config-custom": "workspace:*",
-    "prisma": "^4.11.0",
     "supabase": "^1.45.2",
     "tsconfig": "workspace:*",
+    "tsup": "^6.7.0",
     "tsx": "^3.12.6",
     "typescript": "^5.0.2"
   }
