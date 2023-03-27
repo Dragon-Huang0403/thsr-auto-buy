@@ -1,157 +1,251 @@
-import {inferProcedureInput} from '@trpc/server';
-import Link from 'next/link';
-import {Fragment} from 'react';
+import {zodResolver} from '@hookform/resolvers/zod';
+import {Button, styled, TextField, Typography} from '@mui/material';
+import {DatePicker, TimePicker} from '@mui/x-date-pickers';
+import {BookingMethod, CarType, MemberType, SeatType, Station} from 'database';
+import React from 'react';
+import {Controller, useForm} from 'react-hook-form';
+import {z} from 'zod';
 
-import type {AppRouter} from '~/server/routers/_app';
+import {
+  bookingMethodOptions,
+  carTypeOptions,
+  maxTime,
+  memberOptions,
+  minTime,
+  seatTypeOptions,
+  stationOptions,
+  ticketOptions,
+} from '~/utils/constants';
+import {reservationSchema} from '~/utils/schema';
 
-import {trpc} from '../utils/trpc';
+import Radios from '../components/Radios';
+import Select from '../components/Select';
 import {NextPageWithLayout} from './_app';
 
-const IndexPage: NextPageWithLayout = () => {
-  const utils = trpc.useContext();
-  const postsQuery = trpc.post.list.useInfiniteQuery(
-    {
-      limit: 5,
+function getDefaultValues() {
+  const now = new Date();
+  now.setMinutes(0);
+  const defaultValues: z.infer<typeof reservationSchema> = {
+    startStation: Station.NanGang,
+    endStation: Station.TaiPei,
+    ticketDate: now,
+    bookingMethod: BookingMethod.time,
+    trainNo: '',
+    carType: CarType.Standard,
+    seatType: SeatType.NoRequired,
+    taiwanId: '',
+    email: '',
+    phone: '',
+    tickets: {
+      adultTicket: 1,
+      childTicket: 0,
+      disabledTicket: 0,
+      elderTicket: 0,
+      collegeTicket: 0,
     },
-    {
-      getPreviousPageParam(lastPage) {
-        return lastPage.nextCursor;
-      },
-    },
-  );
+    memberType: MemberType.NotMember,
+  };
+  return defaultValues;
+}
 
-  const addPost = trpc.post.add.useMutation({
-    async onSuccess() {
-      // refetches posts after a post is added
-      await utils.post.list.invalidate();
-    },
+const Form = styled('form')({});
+
+const IndexPage: NextPageWithLayout = () => {
+  const {control, formState, handleSubmit, watch, setError} = useForm({
+    defaultValues: getDefaultValues(),
+    resolver: zodResolver(reservationSchema),
   });
 
-  // prefetch all posts for instant navigation
-  // useEffect(() => {
-  //   const allPosts = postsQuery.data?.pages.flatMap((page) => page.items) ?? [];
-  //   for (const { id } of allPosts) {
-  //     void utils.post.byId.prefetch({ id });
-  //   }
-  // }, [postsQuery.data, utils]);
-
+  const onSubmit = handleSubmit(data => {
+    const isBookByTrainNo = data.bookingMethod === BookingMethod.trainNo;
+    const isTrainNoAllDigit = /^\d{3,4}$/.test(data.trainNo);
+    if (isBookByTrainNo && !isTrainNoAllDigit) {
+      setError('trainNo', {message: '車號錯誤'});
+      return;
+    }
+    console.log(data);
+  });
+  const bookingMethod = watch('bookingMethod');
   return (
-    <>
-      <h1>Welcome to your tRPC starter!</h1>
-      <p>
-        If you get stuck, check <a href="https://trpc.io">the docs</a>, write a
-        message in our <a href="https://trpc.io/discord">Discord-channel</a>, or
-        write a message in{' '}
-        <a href="https://github.com/trpc/trpc/discussions">
-          GitHub Discussions
-        </a>
-        .
-      </p>
-
-      <h2>
-        Latest Posts
-        {postsQuery.status === 'loading' && '(loading)'}
-      </h2>
-
-      <button
-        onClick={() => postsQuery.fetchPreviousPage()}
-        disabled={
-          !postsQuery.hasPreviousPage || postsQuery.isFetchingPreviousPage
-        }
-      >
-        {postsQuery.isFetchingPreviousPage
-          ? 'Loading more...'
-          : postsQuery.hasPreviousPage
-          ? 'Load More'
-          : 'Nothing more to load'}
-      </button>
-
-      {postsQuery.data?.pages.map((page, index) => (
-        <Fragment key={page.items[0]?.id || index}>
-          {page.items.map(item => (
-            <article key={item.id}>
-              <h3>{item.title}</h3>
-              <Link href={`/post/${item.id}`}>View more</Link>
-            </article>
-          ))}
-        </Fragment>
-      ))}
-
-      <hr />
-
-      <h3>Add a Post</h3>
-
-      <form
-        onSubmit={async e => {
-          /**
-           * In a real app you probably don't want to use this manually
-           * Checkout React Hook Form - it works great with tRPC
-           * @see https://react-hook-form.com/
-           * @see https://kitchen-sink.trpc.io/react-hook-form
-           */
-          e.preventDefault();
-          const $form = e.currentTarget;
-          const values = Object.fromEntries(new FormData($form));
-          type Input = inferProcedureInput<AppRouter['post']['add']>;
-          //    ^?
-          const input: Input = {
-            title: values.title as string,
-            text: values.text as string,
-          };
-          try {
-            await addPost.mutateAsync(input);
-
-            $form.reset();
-          } catch (cause) {
-            console.error({cause}, 'Failed to add post');
-          }
-        }}
-      >
-        <label htmlFor="title">Title:</label>
-        <br />
-        <input
-          id="title"
-          name="title"
-          type="text"
-          disabled={addPost.isLoading}
+    <Form
+      onSubmit={onSubmit}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 2,
+        px: 1,
+        pt: 2,
+        pb: 4,
+        overflow: 'auto',
+      }}
+    >
+      <Controller
+        name="startStation"
+        control={control}
+        render={({field}) => (
+          <Select label="啟程站" {...field} options={stationOptions} />
+        )}
+      />
+      <Controller
+        name="endStation"
+        control={control}
+        render={({field}) => (
+          <Select label="到達站" {...field} options={stationOptions} />
+        )}
+      />
+      <Controller
+        name="ticketDate"
+        control={control}
+        render={({field}) => (
+          <DatePicker
+            {...field}
+            label={'訂票日期'}
+            inputFormat="yyyy / MM / dd"
+            renderInput={params => (
+              <TextField {...params} helperText={null} fullWidth />
+            )}
+          />
+        )}
+      />
+      <Controller
+        name="bookingMethod"
+        control={control}
+        render={({field}) => (
+          <Radios label="訂票方法" {...field} options={bookingMethodOptions} />
+        )}
+      />
+      {bookingMethod === BookingMethod.trainNo && (
+        <Controller
+          name="trainNo"
+          control={control}
+          render={({field}) => (
+            <TextField
+              {...field}
+              fullWidth
+              label="車次號碼"
+              error={!!formState.errors.trainNo}
+              helperText={formState.errors.trainNo?.message}
+            />
+          )}
         />
+      )}
+      {bookingMethod === BookingMethod.time && (
+        <Controller
+          name="ticketDate"
+          control={control}
+          render={({field}) => (
+            <TimePicker
+              {...field}
+              renderInput={params => <TextField {...params} fullWidth />}
+              label="選擇時間"
+              minTime={minTime}
+              maxTime={maxTime}
+              minutesStep={5}
+              inputFormat="hh:mm aa"
+            />
+          )}
+        />
+      )}
 
-        <br />
-        <label htmlFor="text">Text:</label>
-        <br />
-        <textarea id="text" name="text" disabled={addPost.isLoading} />
-        <br />
-        <input type="submit" disabled={addPost.isLoading} />
-        {addPost.error && <p style={{color: 'red'}}>{addPost.error.message}</p>}
-      </form>
-    </>
+      <Controller
+        name="seatType"
+        control={control}
+        render={({field}) => (
+          <Select label="座位選擇" {...field} options={seatTypeOptions} />
+        )}
+      />
+      <Controller
+        name="taiwanId"
+        control={control}
+        render={({field}) => (
+          <TextField
+            {...field}
+            fullWidth
+            label="身分證字號"
+            error={!!formState.errors.taiwanId}
+            helperText={formState.errors.taiwanId?.message}
+          />
+        )}
+      />
+      <Controller
+        name="email"
+        control={control}
+        render={({field}) => (
+          <TextField
+            {...field}
+            fullWidth
+            label="E-Mail"
+            type="email"
+            autoComplete="email"
+            error={!!formState.errors.email}
+            helperText={formState.errors.email?.message}
+          />
+        )}
+      />
+      <Controller
+        name="phone"
+        control={control}
+        render={({field}) => (
+          <TextField
+            {...field}
+            fullWidth
+            label="手機號碼"
+            type="tel"
+            autoComplete="tel"
+          />
+        )}
+      />
+      <Controller
+        name="tickets.adultTicket"
+        control={control}
+        render={({field}) => (
+          <Select
+            label="全票"
+            {...field}
+            value={field.value.toString()}
+            onChange={newValue => {
+              field.onChange(parseInt(newValue));
+            }}
+            options={ticketOptions}
+          />
+        )}
+      />
+      <Controller
+        name="tickets.collegeTicket"
+        control={control}
+        render={({field}) => (
+          <Select
+            label="大學生票"
+            {...field}
+            value={field.value.toString()}
+            onChange={newValue => {
+              field.onChange(parseInt(newValue));
+            }}
+            options={ticketOptions}
+          />
+        )}
+      />
+      <Typography color="error">{formState.errors.tickets?.message}</Typography>
+      <Controller
+        name="carType"
+        control={control}
+        render={({field}) => (
+          <Radios label="車廂種類" {...field} options={carTypeOptions} />
+        )}
+      />
+      <Controller
+        name="carType"
+        control={control}
+        render={({field}) => (
+          <Radios label="是否為高鐵會員" {...field} options={memberOptions} />
+        )}
+      />
+      <Typography color="error">{formState.errors.email?.message}</Typography>
+      <Button fullWidth variant="contained" type="submit">
+        預約訂票
+      </Button>
+    </Form>
   );
 };
 
 export default IndexPage;
-
-/**
- * If you want to statically render this page
- * - Export `appRouter` & `createContext` from [trpc].ts
- * - Make the `opts` object optional on `createContext()`
- *
- * @link https://trpc.io/docs/ssg
- */
-// export const getStaticProps = async (
-//   context: GetStaticPropsContext<{ filter: string }>,
-// ) => {
-//   const ssg = createProxySSGHelpers({
-//     router: appRouter,
-//     ctx: await createContext(),
-//   });
-//
-//   await ssg.post.all.fetch();
-//
-//   return {
-//     props: {
-//       trpcState: ssg.dehydrate(),
-//       filter: context.params?.filter ?? 'all',
-//     },
-//     revalidate: 1,
-//   };
-// };

@@ -1,3 +1,5 @@
+import {LocalizationProvider} from '@mui/x-date-pickers';
+import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFns';
 import type {NextPage} from 'next';
 import type {AppProps, AppType} from 'next/app';
 import type {ReactElement, ReactNode} from 'react';
@@ -20,7 +22,11 @@ const MyApp = (({Component, pageProps}: AppPropsWithLayout) => {
   const getLayout =
     Component.getLayout ?? (page => <DefaultLayout>{page}</DefaultLayout>);
 
-  return getLayout(<Component {...pageProps} />);
+  return (
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
+      {getLayout(<Component {...pageProps} />)}
+    </LocalizationProvider>
+  );
 }) as AppType;
 
 export default trpc.withTRPC(MyApp);

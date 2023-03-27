@@ -3,5 +3,5 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
   },
-  "cSpell.words": ["predev", "supabase", "THSR", "tsup"]
+  "cSpell.words": ["predev", "supabase", "THSR", "trpc", "tsup"]
 }
