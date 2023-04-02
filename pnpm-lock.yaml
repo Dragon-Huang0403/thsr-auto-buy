@@ -46,6 +46,7 @@ importers:
       '@emotion/react': ^11.10.6
       '@emotion/styled': ^11.10.6
       '@hookform/resolvers': ^3.0.0
+      '@mui/icons-material': ^5.11.11
       '@mui/material': ^5.11.14
       '@mui/x-date-pickers': ^5.0.20
       '@playwright/test': ^1.32.1
@@ -59,10 +60,10 @@ importers:
       '@types/react': ^18.0.30
       '@typescript-eslint/eslint-plugin': ^5.57.0
       '@typescript-eslint/parser': ^5.57.0
-      crawler: workspace:1.0.0
+      crawler: workspace:*
       date-fns: ^2.29.3
       eslint: ^8.36.0
-      eslint-config-custom: workspace:0.0.0
+      eslint-config-custom: workspace:*
       eslint-config-next: ^13.2.4
       eslint-plugin-react: ^7.32.2
       eslint-plugin-react-hooks: ^4.6.0
@@ -73,8 +74,8 @@ importers:
       react-hook-form: ^7.43.8
       start-server-and-test: ^1.15.4
       superjson: ^1.12.2
-      taiwan-id: workspace:1.0.0
-      tdx-api: workspace:1.0.0
+      taiwan-id: workspace:*
+      tdx-api: workspace:*
       tsx: ^3.12.6
       typescript: ^4.9.5
       vite: ^4.2.1
@@ -84,6 +85,7 @@ importers:
       '@emotion/react': 11.10.6_2thlp7g7odiqm7dwhn3rlhxaa4
       '@emotion/styled': 11.10.6_cfcdhdr57xmqdzhb6aq4iia5f4
       '@hookform/resolvers': 3.0.0_react-hook-form@7.43.8
+      '@mui/icons-material': 5.11.11_r2azkhsbcjpgr7h4skmoqqeh54
       '@mui/material': 5.11.14_quat5witkhq3gbgscvy3yo7r7a
       '@mui/x-date-pickers': 5.0.20_myqjdmxidua64j5x3n4yndl3um
       '@prisma/client': 3.15.2_prisma@4.11.0
@@ -1173,6 +1175,23 @@ packages:
 
   /@mui/core-downloads-tracker/5.11.14:
     resolution: {integrity: sha512-rfc08z6+3Fif+Gopx2/qmk+MEQlwYeA+gOcSK048BHkTty/ol/boHuVeL2BNC/cf9OVRjJLYHtVb/DeW791LSQ==}
+    dev: false
+
+  /@mui/icons-material/5.11.11_r2azkhsbcjpgr7h4skmoqqeh54:
+    resolution: {integrity: sha512-Eell3ADmQVE8HOpt/LZ3zIma8JSvPh3XgnhwZLT0k5HRqZcd6F/QDHc7xsWtgz09t+UEFvOYJXjtrwKmLdwwpw==}
+    engines: {node: '>=12.0.0'}
+    peerDependencies:
+      '@mui/material': ^5.0.0
+      '@types/react': ^17.0.0 || ^18.0.0
+      react: ^17.0.0 || ^18.0.0
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+    dependencies:
+      '@babel/runtime': 7.21.0
+      '@mui/material': 5.11.14_quat5witkhq3gbgscvy3yo7r7a
+      '@types/react': 18.0.30
+      react: 18.2.0
     dev: false
 
   /@mui/material/5.11.14_quat5witkhq3gbgscvy3yo7r7a:
@@ -2369,7 +2388,7 @@ packages:
   /axios/0.27.2_debug@4.3.4:
     resolution: {integrity: sha512-t+yRIyySRTp/wua5xEr+z1q60QmLq8ABsS5O9Me1AsE5dfKqgnCFzwiCZZ/cGNd1lq4/7akDWMxdhVlucjmnOQ==}
     dependencies:
-      follow-redirects: 1.15.2
+      follow-redirects: 1.15.2_debug@4.3.4
       form-data: 4.0.0
     transitivePeerDependencies:
       - debug
@@ -3743,6 +3762,19 @@ packages:
     peerDependenciesMeta:
       debug:
         optional: true
+    dev: false
+
+  /follow-redirects/1.15.2_debug@4.3.4:
+    resolution: {integrity: sha512-VQLG33o04KaQ8uYi2tVNbdrWp1QWxNNea+nmIB4EVM28v0hmP17z7aG1+wAkNzVq4KeXTq3221ye5qTJP91JwA==}
+    engines: {node: '>=4.0'}
+    peerDependencies:
+      debug: '*'
+    peerDependenciesMeta:
+      debug:
+        optional: true
+    dependencies:
+      debug: 4.3.4
+    dev: true
 
   /for-each/0.3.3:
     resolution: {integrity: sha512-jqYfLp7mo9vIyQf8ykW2v7A+2N4QjeCeI5+Dz9XraiO1ign81wjiH7Fb9vSOWvQfNtmSa4H2RoQTrrXivdUZmw==}

@@ -1,6 +1,7 @@
 import {
   BookingMethod,
   CarType,
+  DiscountType,
   MemberType,
   SeatType,
   Station,
@@ -20,6 +21,21 @@ export const stations = [
   Station.TaiNan,
   Station.ZuoYing,
 ] as const;
+
+export const stationObjects = {
+  [Station.NanGang]: {name: '南港', value: '1', id: '0990'},
+  [Station.TaiPei]: {name: '台北', value: '2', id: '1000'},
+  [Station.BanQiao]: {name: '板橋', value: '3', id: '1010'},
+  [Station.TaoYuan]: {name: '桃園', value: '4', id: '1020'},
+  [Station.XinZhu]: {name: '新竹', value: '5', id: '1030'},
+  [Station.MiaoLi]: {name: '苗栗', value: '6', id: '1035'},
+  [Station.TaiZhong]: {name: '台中', value: '7', id: '1040'},
+  [Station.ZhangHua]: {name: '彰化', value: '8', id: '1043'},
+  [Station.YunLin]: {name: '雲林', value: '9', id: '1047'},
+  [Station.JiaYi]: {name: '嘉義', value: '10', id: '1050'},
+  [Station.TaiNan]: {name: '台南', value: '11', id: '1060'},
+  [Station.ZuoYing]: {name: '左營', value: '12', id: '1070'},
+} as const;
 
 export const stationOptions = [
   {value: Station.NanGang, label: '南港'},
@@ -84,3 +100,8 @@ export const ticketOptions = [
   {value: '9', label: '9'},
   {value: '10', label: '10'},
 ] as const;
+
+export const discountTypes = {
+  [DiscountType.college]: '大學生',
+  [DiscountType.earlyBird]: '早鳥',
+} as const;

@@ -21,6 +21,7 @@
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
     "@hookform/resolvers": "^3.0.0",
+    "@mui/icons-material": "^5.11.11",
     "@mui/material": "^5.11.14",
     "@mui/x-date-pickers": "^5.0.20",
     "@prisma/client": "^3.15.2",

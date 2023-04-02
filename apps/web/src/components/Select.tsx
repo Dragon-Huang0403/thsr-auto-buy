@@ -1,5 +1,6 @@
 import {
   FormControl,
+  FormHelperText,
   InputLabel,
   MenuItem,
   Select as MuiSelect,
@@ -19,10 +20,21 @@ interface SelectProps<TOption extends Option> {
   onChange: (newValue: TOption['value']) => void;
   onBlur: () => void;
   label: string;
+  error?: boolean;
+  helperText?: string;
 }
 
 const SelectInner = <TOption extends Option>(
-  {label, options, value, onChange, onBlur, name}: SelectProps<TOption>,
+  {
+    label,
+    options,
+    value,
+    onChange,
+    onBlur,
+    name,
+    error,
+    helperText,
+  }: SelectProps<TOption>,
   ref: React.Ref<HTMLDivElement>,
 ) => {
   const handleOnChange = (e: SelectChangeEvent<TOption['value']>) => {
@@ -30,7 +42,7 @@ const SelectInner = <TOption extends Option>(
     onChange(newValue);
   };
   return (
-    <FormControl fullWidth ref={ref}>
+    <FormControl fullWidth ref={ref} error={error}>
       <InputLabel>{label}</InputLabel>
       <MuiSelect
         value={value}
@@ -45,6 +57,7 @@ const SelectInner = <TOption extends Option>(
           </MenuItem>
         ))}
       </MuiSelect>
+      {error && helperText && <FormHelperText>{helperText}</FormHelperText>}
     </FormControl>
   );
 };

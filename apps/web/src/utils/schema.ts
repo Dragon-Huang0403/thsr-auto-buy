@@ -38,3 +38,10 @@ export const reservationSchema = z.object({
     }, '單次最多購買 10 張票'),
   memberType: z.enum(memberTypes),
 });
+
+export const timeSearchSchema = reservationSchema.pick({
+  startStation: true,
+  endStation: true,
+  ticketDate: true,
+});
+export type TimeSearchParams = z.infer<typeof timeSearchSchema>;

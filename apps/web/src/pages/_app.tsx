@@ -1,3 +1,4 @@
+import {CssBaseline} from '@mui/material';
 import {LocalizationProvider} from '@mui/x-date-pickers';
 import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFns';
 import type {NextPage} from 'next';
@@ -24,6 +25,7 @@ const MyApp = (({Component, pageProps}: AppPropsWithLayout) => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <CssBaseline />
       {getLayout(<Component {...pageProps} />)}
     </LocalizationProvider>
   );
