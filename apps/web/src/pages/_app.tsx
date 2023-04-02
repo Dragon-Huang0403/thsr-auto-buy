@@ -6,6 +6,7 @@ import type {AppProps, AppType} from 'next/app';
 import type {ReactElement, ReactNode} from 'react';
 
 import {DefaultLayout} from '~/components/DefaultLayout';
+import {StoreProvider} from '~/utils/store';
 import {trpc} from '~/utils/trpc';
 
 export type NextPageWithLayout<
@@ -26,7 +27,7 @@ const MyApp = (({Component, pageProps}: AppPropsWithLayout) => {
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <CssBaseline />
-      {getLayout(<Component {...pageProps} />)}
+      <StoreProvider>{getLayout(<Component {...pageProps} />)}</StoreProvider>
     </LocalizationProvider>
   );
 }) as AppType;

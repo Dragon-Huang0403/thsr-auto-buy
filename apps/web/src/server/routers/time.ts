@@ -3,7 +3,7 @@
  * This is an example router, you can delete this file and then update `../pages/api/trpc/[trpc].tsx`
  */
 import {Discount} from '@prisma/client';
-import {addHours, format} from 'date-fns';
+import {addDays, addHours, format} from 'date-fns';
 import {TdxApi} from 'tdx-api';
 import {z} from 'zod';
 
@@ -61,4 +61,10 @@ export const timeRouter = router({
       });
       return trainItems;
     }),
+  minReservingDate: publicProcedure.query(async () => {
+    const {data: dates} = await tdxApi.getAvailableDates();
+    const endDate = new Date(dates.EndDate);
+    const minDate = addDays(endDate, 1);
+    return {minDate};
+  }),
 });

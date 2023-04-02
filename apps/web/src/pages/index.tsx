@@ -1,16 +1,9 @@
 import {zodResolver} from '@hookform/resolvers/zod';
 import {Button, styled, TextField, Typography} from '@mui/material';
 import {DatePicker, TimePicker} from '@mui/x-date-pickers';
-import {
-  BookingMethod,
-  CarType,
-  MemberType,
-  SeatType,
-  Station,
-} from '@prisma/client';
+import {BookingMethod} from '@prisma/client';
 import React from 'react';
 import {Controller, useForm} from 'react-hook-form';
-import {z} from 'zod';
 
 import {
   bookingMethodOptions,
@@ -23,49 +16,26 @@ import {
   ticketOptions,
 } from '~/utils/constants';
 import {reservationSchema} from '~/utils/schema';
+import {useStore} from '~/utils/store';
 import {trpc} from '~/utils/trpc';
 
 import Radios from '../components/Radios';
 import Select from '../components/Select';
 import {NextPageWithLayout} from './_app';
 
-function getDefaultValues() {
-  const now = new Date();
-  now.setMinutes(0);
-  const defaultValues: z.infer<typeof reservationSchema> = {
-    startStation: Station.NanGang,
-    endStation: Station.TaiPei,
-    ticketDate: now,
-    bookingMethod: BookingMethod.time,
-    trainNo: '',
-    carType: CarType.Standard,
-    seatType: SeatType.NoRequired,
-    taiwanId: '',
-    email: '',
-    phone: '',
-    tickets: {
-      adultTicket: 1,
-      childTicket: 0,
-      disabledTicket: 0,
-      elderTicket: 0,
-      collegeTicket: 0,
-    },
-    memberType: MemberType.NotMember,
-  };
-  return defaultValues;
-}
-
 const Form = styled('form')({});
 
 const IndexPage: NextPageWithLayout = () => {
+  const {updateStore, data} = useStore();
   const {control, formState, handleSubmit, watch, setError} = useForm({
-    defaultValues: getDefaultValues(),
+    defaultValues: data,
     resolver: zodResolver(reservationSchema),
   });
 
   const addReservation = trpc.reservation.add.useMutation();
 
   const onSubmit = handleSubmit(data => {
+    updateStore(data);
     const isBookByTrainNo = data.bookingMethod === BookingMethod.trainNo;
     const isTrainNoAllDigit = /^\d{3,4}$/.test(data.trainNo);
     if (isBookByTrainNo && !isTrainNoAllDigit) {

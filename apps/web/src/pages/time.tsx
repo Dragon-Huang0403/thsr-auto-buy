@@ -2,13 +2,12 @@ import {zodResolver} from '@hookform/resolvers/zod';
 import {SwapVert} from '@mui/icons-material';
 import {Box, Button, IconButton, styled, TextField} from '@mui/material';
 import {DatePicker, TimePicker} from '@mui/x-date-pickers';
-import {Station} from '@prisma/client';
 import {useRouter} from 'next/router';
 import React from 'react';
 import {Controller, useForm} from 'react-hook-form';
-import {z} from 'zod';
 
 import {maxTime, minTime, stationOptions} from '~/utils/constants';
+import {useStore} from '~/utils/store';
 import {trpc} from '~/utils/trpc';
 
 import Select from '../components/Select';
@@ -17,24 +16,18 @@ import {NextPageWithLayout} from './_app';
 
 const Form = styled('form')({});
 
-function getDefaultValues() {
-  const now = new Date();
-  now.setMinutes(0);
-  const defaultValues: z.infer<typeof timeSearchSchema> = {
-    startStation: Station.NanGang,
-    endStation: Station.TaiPei,
-    ticketDate: now,
-  };
-  return defaultValues;
-}
-
 const TimePage: NextPageWithLayout = () => {
   const router = useRouter();
+  const {data, updateStore} = useStore();
 
   const utils = trpc.useContext();
   const {control, handleSubmit, setError, formState, setValue, getValues} =
     useForm({
-      defaultValues: getDefaultValues(),
+      defaultValues: {
+        startStation: data.startStation,
+        endStation: data.endStation,
+        ticketDate: data.ticketDate,
+      },
       resolver: zodResolver(timeSearchSchema),
     });
 
@@ -43,6 +36,7 @@ const TimePage: NextPageWithLayout = () => {
       setError('endStation', {message: '到達站與啟程站不得相同'});
       return;
     }
+    updateStore(data);
     const {ticketDate, startStation, endStation} = data;
     utils.time.search.prefetch({ticketDate});
     const searchParams = new URLSearchParams({

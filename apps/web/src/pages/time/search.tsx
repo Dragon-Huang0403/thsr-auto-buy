@@ -16,6 +16,7 @@ import {
   IconButton,
   Typography,
 } from '@mui/material';
+import {BookingMethod} from '@prisma/client';
 import NextLink from 'next/link';
 import {useRouter} from 'next/router';
 import React from 'react';
@@ -24,6 +25,7 @@ import {z} from 'zod';
 import {discountTypes, stationObjects} from '~/utils/constants';
 import {handleTrainItem} from '~/utils/helpers';
 import {timeSearchSchema} from '~/utils/schema';
+import {useStore} from '~/utils/store';
 import {trpc} from '~/utils/trpc';
 
 import {NextPageWithLayout} from '../_app';
@@ -40,6 +42,7 @@ const querySchema = timeSearchSchema
   .catch(null);
 
 const SearchTrain: NextPageWithLayout = () => {
+  const {updateStore} = useStore();
   const router = useRouter();
   const routerQuery = querySchema.parse(router.query);
 
@@ -79,6 +82,16 @@ const SearchTrain: NextPageWithLayout = () => {
 
   const {startStation, endStation} = routerQuery;
   const trainItems = handleTrainItem(timeTable, routerQuery);
+
+  const handleReserveTrain = (trainNo: string) => {
+    updateStore({
+      trainNo,
+      startStation,
+      endStation,
+      bookingMethod: BookingMethod.trainNo,
+    });
+    router.push('/');
+  };
 
   return (
     <Box sx={{position: 'relative', height: '100%'}}>
@@ -144,7 +157,13 @@ const SearchTrain: NextPageWithLayout = () => {
                     return <Chip key={discount.type} label={label} />;
                   })}
                 </Box>
-                <Button variant="contained" sx={{ml: 'auto'}}>
+                <Button
+                  variant="contained"
+                  sx={{ml: 'auto'}}
+                  onClick={() => {
+                    handleReserveTrain(trainItem.trainInfo.TrainNo);
+                  }}
+                >
                   預約訂票
                 </Button>
               </Box>
