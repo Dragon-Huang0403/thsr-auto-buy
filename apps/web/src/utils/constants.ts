@@ -105,3 +105,5 @@ export const discountTypes = {
   [DiscountType.college]: '大學生',
   [DiscountType.earlyBird]: '早鳥',
 } as const;
+
+export const earlyBookDay = 28;

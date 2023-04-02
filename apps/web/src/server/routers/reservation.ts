@@ -8,6 +8,7 @@ import {prisma} from '~/server/prisma';
 import {reservationSchema} from '~/utils/schema';
 
 import {publicProcedure, router} from '../trpc';
+import {getBookDate} from '../utils';
 
 /**
  * Default selector for Post.
@@ -38,7 +39,7 @@ const defaultReservationSelect = Prisma.validator<Prisma.ReservationSelect>()({
 export const reservationRouter = router({
   add: publicProcedure.input(reservationSchema).mutation(async ({input}) => {
     const {tickets, ...reservation} = input;
-    const bookDate = new Date();
+    const bookDate = await getBookDate(reservation.ticketDate);
 
     const data = {
       ...tickets,

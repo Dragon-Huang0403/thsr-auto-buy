@@ -42,7 +42,7 @@ const IndexPage: NextPageWithLayout = () => {
       setError('trainNo', {message: '車號錯誤'});
       return;
     }
-    addReservation.mutate(data);
+    addReservation.mutate(data, {onSuccess: console.log});
   });
   const bookingMethod = watch('bookingMethod');
   return (
