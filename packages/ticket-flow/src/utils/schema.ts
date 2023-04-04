@@ -31,6 +31,7 @@ export const ticketResultSchema = z.object({
   departureTime: hourAndMinuteSchema,
   departureStation: z.string(),
   arrivalTime: hourAndMinuteSchema,
+  duration: hourAndMinuteSchema,
   arrivalStation: z.string(),
   date: z
     .string()

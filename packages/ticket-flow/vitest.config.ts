@@ -7,6 +7,6 @@ import {defineConfig} from 'vite';
 export default defineConfig({
   test: {
     exclude: ['build', 'node_modules'],
-    testTimeout: 15_000,
+    testTimeout: 30_000,
   },
 });

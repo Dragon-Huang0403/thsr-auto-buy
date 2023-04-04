@@ -121,6 +121,7 @@ const ticketResultQueries = {
   arrivalStation: '.arrival-stn span',
   totalPrice: '#setTrainTotalPriceValue',
   date: '.date span',
+  duration: '#InfoEstimatedTime0',
 } as const;
 
 export function parseTicketResult(page: HTMLElement) {

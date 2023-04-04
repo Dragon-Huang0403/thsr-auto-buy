@@ -43,8 +43,7 @@ const second = 1000;
 async function getCaptchaResult({
   requestId,
   apiKey,
-  retry = 10,
-  delay = 5 * second,
+  retry = 15,
 }: {
   requestId: string;
   apiKey: string;
@@ -71,14 +70,12 @@ async function getCaptchaResult({
     throw new Error('Solving captcha failed, retry too many times');
   }
 
-  await sleep(delay);
+  await sleep(second);
   const newRetry = retry - 1;
-  const newDelay = Math.min(second, delay - second);
 
   return getCaptchaResult({
     requestId,
     apiKey,
     retry: newRetry,
-    delay: newDelay,
   });
 }

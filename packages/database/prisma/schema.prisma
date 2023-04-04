@@ -41,8 +41,8 @@ model TicketResult {
   id            Int         @id @default(autoincrement())
   ticketId      String
   trainNo       Int
-  startTime     String
-  endTime       String
+  departureTime String
+  arrivalTime   String
   duration      String
   totalPrice    Int
   creatdAt      DateTime    @default(now())
@@ -84,9 +84,8 @@ enum DiscountType {
 
 enum TicketErrorType {
   solvingCaptchaWrongy
-
   internalServerError
-  unkwown
+  unknown
 }
 
 enum Station {
