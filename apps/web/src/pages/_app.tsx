@@ -5,7 +5,9 @@ import type {NextPage} from 'next';
 import type {AppProps, AppType} from 'next/app';
 import type {ReactElement, ReactNode} from 'react';
 
+import {CustomAlertProvider} from '~/components/CustomAlert';
 import {DefaultLayout} from '~/components/DefaultLayout';
+import {SnackbarProvider} from '~/components/Snackbar';
 import {StoreProvider} from '~/utils/store';
 import {trpc} from '~/utils/trpc';
 
@@ -27,7 +29,13 @@ const MyApp = (({Component, pageProps}: AppPropsWithLayout) => {
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <CssBaseline />
-      <StoreProvider>{getLayout(<Component {...pageProps} />)}</StoreProvider>
+      <CustomAlertProvider>
+        <SnackbarProvider>
+          <StoreProvider>
+            {getLayout(<Component {...pageProps} />)}
+          </StoreProvider>
+        </SnackbarProvider>
+      </CustomAlertProvider>
     </LocalizationProvider>
   );
 }) as AppType;

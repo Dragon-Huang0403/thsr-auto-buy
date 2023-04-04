@@ -1,5 +1,6 @@
-import {AppBar, Box, Container, Link, Tab, Tabs} from '@mui/material';
+import {AppBar, Box, Container, Tab, Tabs} from '@mui/material';
 import Head from 'next/head';
+import NextLink from 'next/link';
 import {useRouter} from 'next/router';
 import {ReactNode} from 'react';
 
@@ -12,7 +13,7 @@ const routes = [
     name: '預約訂票',
     regex: /^\/$/,
   },
-  {href: '/reservation', name: '訂票查詢', regex: /^\/reservation/},
+  {href: '/reservation', name: '訂票紀錄', regex: /^\/reservation/},
 ] as const;
 
 export const DefaultLayout = ({children}: DefaultLayoutProps) => {
@@ -41,7 +42,7 @@ export const DefaultLayout = ({children}: DefaultLayoutProps) => {
                 key={route.name}
                 href={route.href}
                 value={route.href}
-                LinkComponent={Link}
+                LinkComponent={NextLink}
               />
             ))}
           </Tabs>

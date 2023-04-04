@@ -57,6 +57,11 @@ export const carTypeOptions = [
   {value: CarType.Standard, label: '標準車廂'},
   {value: CarType.Business, label: '商務車廂'},
 ] as const;
+
+export const carTypeObject = {
+  [CarType.Standard]: '標準車廂',
+  [CarType.Business]: '商務車廂',
+} as const;
 export const bookingMethods = [
   BookingMethod.time,
   BookingMethod.trainNo,
@@ -65,6 +70,11 @@ export const bookingMethodOptions = [
   {value: BookingMethod.time, label: '選擇時間'},
   {value: BookingMethod.trainNo, label: '輸入車次'},
 ] as const;
+
+export const bookingMethodObject = {
+  [BookingMethod.time]: '選擇時間',
+  [BookingMethod.trainNo]: '輸入車次',
+} as const;
 
 export const seatTypes = [
   SeatType.NoRequired,
@@ -77,6 +87,11 @@ export const seatTypeOptions = [
   {value: SeatType.WindowSeat, label: '靠窗優先'},
   {value: SeatType.AisleSeat, label: '走道優先'},
 ];
+export const seatTypeObject = {
+  [SeatType.NoRequired]: '無座位偏好',
+  [SeatType.WindowSeat]: '靠窗優先',
+  [SeatType.AisleSeat]: '走道優先',
+} as const;
 
 export const memberTypes = [MemberType.NotMember, MemberType.Member] as const;
 export const memberOptions = [
@@ -107,3 +122,6 @@ export const discountTypes = {
 } as const;
 
 export const earlyBookDay = 28;
+
+export const thsrHistoryWebsite =
+  'https://irs.thsrc.com.tw/IMINT/?wicket:bookmarkablePage=:tw.com.mitac.webapp.thsr.viewer.History';

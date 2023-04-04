@@ -3,6 +3,9 @@ import {SwapVert} from '@mui/icons-material';
 import {
   Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogTitle,
   IconButton,
   styled,
   TextField,
@@ -10,9 +13,11 @@ import {
 } from '@mui/material';
 import {DatePicker, TimePicker} from '@mui/x-date-pickers';
 import {BookingMethod} from '@prisma/client';
+import NextLink from 'next/link';
 import React from 'react';
 import {Controller, useForm} from 'react-hook-form';
 
+import LoadingBackdrop from '~/components/LoadingBackdrop';
 import {
   bookingMethodOptions,
   carTypeOptions,
@@ -48,6 +53,8 @@ const IndexPage: NextPageWithLayout = () => {
     resolver: zodResolver(reservationSchema),
   });
 
+  const utils = trpc.useContext();
+
   const addReservation = trpc.reservation.add.useMutation();
 
   const onSubmit = handleSubmit(data => {
@@ -62,7 +69,11 @@ const IndexPage: NextPageWithLayout = () => {
       setError('endStation', {message: '到達站與啟程站不得相同'});
       return;
     }
-    addReservation.mutate(data, {onSuccess: console.log});
+    addReservation.mutate(data, {
+      onSuccess: () => {
+        utils.reservation.byTaiwanId.prefetch({taiwanId: data.taiwanId});
+      },
+    });
   });
   const bookingMethod = watch('bookingMethod');
 
@@ -72,212 +83,235 @@ const IndexPage: NextPageWithLayout = () => {
     setValue('endStation', startStation);
     setValue('startStation', endStation);
   };
+
   return (
-    <Form
-      onSubmit={onSubmit}
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2,
-        px: 2,
-        pt: 4,
-        pb: 4,
-        overflow: 'auto',
-      }}
-    >
-      <Controller
-        name="startStation"
-        control={control}
-        render={({field}) => (
-          <Select label="啟程站" {...field} options={stationOptions} />
-        )}
-      />
-      <Box sx={{position: 'relative', my: -1}}>
-        <IconButton
-          sx={{
-            position: 'absolute',
-            zIndex: 100,
-            left: '50%',
-            top: '50%',
-            translate: '-50% -50%',
-            bgcolor: theme => theme.palette.common.white,
-            border: theme => `1px solid ${theme.palette.grey[500]}`,
-            borderRadius: '50%',
-            '&:hover': {
+    <>
+      <Form
+        onSubmit={onSubmit}
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
+          px: 2,
+          pt: 4,
+          pb: 4,
+          overflow: 'auto',
+        }}
+      >
+        <Controller
+          name="startStation"
+          control={control}
+          render={({field}) => (
+            <Select label="啟程站" {...field} options={stationOptions} />
+          )}
+        />
+        <Box sx={{position: 'relative', my: -1}}>
+          <IconButton
+            sx={{
+              position: 'absolute',
+              zIndex: 100,
+              left: '50%',
+              top: '50%',
+              translate: '-50% -50%',
               bgcolor: theme => theme.palette.common.white,
-            },
-          }}
-          onClick={swapStations}
-        >
-          <SwapVert />
-        </IconButton>
-      </Box>
-      <Controller
-        name="endStation"
-        control={control}
-        render={({field}) => (
-          <Select
-            label="到達站"
-            {...field}
-            options={stationOptions}
-            error={!!formState.errors.endStation}
-            helperText={formState.errors.endStation?.message}
-          />
-        )}
-      />
-      <Controller
-        name="ticketDate"
-        control={control}
-        render={({field}) => (
-          <DatePicker
-            {...field}
-            label={'訂票日期'}
-            inputFormat="yyyy / MM / dd"
-            renderInput={params => (
-              <TextField {...params} helperText={null} fullWidth />
+              border: theme => `1px solid ${theme.palette.grey[500]}`,
+              borderRadius: '50%',
+              '&:hover': {
+                bgcolor: theme => theme.palette.common.white,
+              },
+            }}
+            onClick={swapStations}
+          >
+            <SwapVert />
+          </IconButton>
+        </Box>
+        <Controller
+          name="endStation"
+          control={control}
+          render={({field}) => (
+            <Select
+              label="到達站"
+              {...field}
+              options={stationOptions}
+              error={!!formState.errors.endStation}
+              helperText={formState.errors.endStation?.message}
+            />
+          )}
+        />
+        <Controller
+          name="ticketDate"
+          control={control}
+          render={({field}) => (
+            <DatePicker
+              {...field}
+              label={'訂票日期'}
+              inputFormat="yyyy / MM / dd"
+              renderInput={params => (
+                <TextField {...params} helperText={null} fullWidth />
+              )}
+            />
+          )}
+        />
+        <Controller
+          name="bookingMethod"
+          control={control}
+          render={({field}) => (
+            <Radios
+              label="訂票方法"
+              {...field}
+              options={bookingMethodOptions}
+            />
+          )}
+        />
+        {bookingMethod === BookingMethod.trainNo && (
+          <Controller
+            name="trainNo"
+            control={control}
+            render={({field}) => (
+              <TextField
+                {...field}
+                fullWidth
+                label="車次號碼"
+                error={!!formState.errors.trainNo}
+                helperText={formState.errors.trainNo?.message}
+              />
             )}
           />
         )}
-      />
-      <Controller
-        name="bookingMethod"
-        control={control}
-        render={({field}) => (
-          <Radios label="訂票方法" {...field} options={bookingMethodOptions} />
+        {bookingMethod === BookingMethod.time && (
+          <Controller
+            name="ticketDate"
+            control={control}
+            render={({field}) => (
+              <TimePicker
+                {...field}
+                renderInput={params => <TextField {...params} fullWidth />}
+                label="選擇時間"
+                ampm={false}
+                minTime={minTime}
+                maxTime={maxTime}
+                minutesStep={5}
+                inputFormat="HH:mm"
+              />
+            )}
+          />
         )}
-      />
-      {bookingMethod === BookingMethod.trainNo && (
+
         <Controller
-          name="trainNo"
+          name="seatType"
+          control={control}
+          render={({field}) => (
+            <Select label="座位選擇" {...field} options={seatTypeOptions} />
+          )}
+        />
+        <Controller
+          name="taiwanId"
           control={control}
           render={({field}) => (
             <TextField
               {...field}
               fullWidth
-              label="車次號碼"
-              error={!!formState.errors.trainNo}
-              helperText={formState.errors.trainNo?.message}
+              label="身分證字號"
+              error={!!formState.errors.taiwanId}
+              helperText={formState.errors.taiwanId?.message}
             />
           )}
         />
-      )}
-      {bookingMethod === BookingMethod.time && (
         <Controller
-          name="ticketDate"
+          name="email"
           control={control}
           render={({field}) => (
-            <TimePicker
+            <TextField
               {...field}
-              renderInput={params => <TextField {...params} fullWidth />}
-              label="選擇時間"
-              ampm={false}
-              minTime={minTime}
-              maxTime={maxTime}
-              minutesStep={5}
-              inputFormat="HH:mm"
+              fullWidth
+              label="E-Mail"
+              type="email"
+              autoComplete="email"
+              error={!!formState.errors.email}
+              helperText={formState.errors.email?.message}
             />
           )}
         />
-      )}
-
-      <Controller
-        name="seatType"
-        control={control}
-        render={({field}) => (
-          <Select label="座位選擇" {...field} options={seatTypeOptions} />
-        )}
-      />
-      <Controller
-        name="taiwanId"
-        control={control}
-        render={({field}) => (
-          <TextField
-            {...field}
+        <Controller
+          name="phone"
+          control={control}
+          render={({field}) => (
+            <TextField
+              {...field}
+              fullWidth
+              label="手機號碼"
+              type="tel"
+              autoComplete="tel"
+            />
+          )}
+        />
+        <Controller
+          name="tickets.adultTicket"
+          control={control}
+          render={({field}) => (
+            <Select
+              label="全票"
+              {...field}
+              value={field.value.toString()}
+              onChange={newValue => {
+                field.onChange(parseInt(newValue));
+              }}
+              options={ticketOptions}
+            />
+          )}
+        />
+        <Controller
+          name="tickets.collegeTicket"
+          control={control}
+          render={({field}) => (
+            <Select
+              label="大學生票"
+              {...field}
+              value={field.value.toString()}
+              onChange={newValue => {
+                field.onChange(parseInt(newValue));
+              }}
+              options={ticketOptions}
+            />
+          )}
+        />
+        <Typography color="error">
+          {formState.errors.tickets?.message}
+        </Typography>
+        <Controller
+          name="carType"
+          control={control}
+          render={({field}) => (
+            <Radios label="車廂種類" {...field} options={carTypeOptions} />
+          )}
+        />
+        <Controller
+          name="memberType"
+          control={control}
+          render={({field}) => (
+            <Radios label="是否為高鐵會員" {...field} options={memberOptions} />
+          )}
+        />
+        <Typography color="error">{formState.errors.email?.message}</Typography>
+        <Button fullWidth variant="contained" type="submit">
+          預約訂票
+        </Button>
+      </Form>
+      <LoadingBackdrop open={addReservation.isLoading} />
+      <Dialog open={addReservation.isSuccess}>
+        <DialogTitle sx={{px: 10, pt: 4}}>預約成功</DialogTitle>
+        <DialogActions sx={{px: 4, pb: 2}}>
+          <Button
             fullWidth
-            label="身分證字號"
-            error={!!formState.errors.taiwanId}
-            helperText={formState.errors.taiwanId?.message}
-          />
-        )}
-      />
-      <Controller
-        name="email"
-        control={control}
-        render={({field}) => (
-          <TextField
-            {...field}
-            fullWidth
-            label="E-Mail"
-            type="email"
-            autoComplete="email"
-            error={!!formState.errors.email}
-            helperText={formState.errors.email?.message}
-          />
-        )}
-      />
-      <Controller
-        name="phone"
-        control={control}
-        render={({field}) => (
-          <TextField
-            {...field}
-            fullWidth
-            label="手機號碼"
-            type="tel"
-            autoComplete="tel"
-          />
-        )}
-      />
-      <Controller
-        name="tickets.adultTicket"
-        control={control}
-        render={({field}) => (
-          <Select
-            label="全票"
-            {...field}
-            value={field.value.toString()}
-            onChange={newValue => {
-              field.onChange(parseInt(newValue));
-            }}
-            options={ticketOptions}
-          />
-        )}
-      />
-      <Controller
-        name="tickets.collegeTicket"
-        control={control}
-        render={({field}) => (
-          <Select
-            label="大學生票"
-            {...field}
-            value={field.value.toString()}
-            onChange={newValue => {
-              field.onChange(parseInt(newValue));
-            }}
-            options={ticketOptions}
-          />
-        )}
-      />
-      <Typography color="error">{formState.errors.tickets?.message}</Typography>
-      <Controller
-        name="carType"
-        control={control}
-        render={({field}) => (
-          <Radios label="車廂種類" {...field} options={carTypeOptions} />
-        )}
-      />
-      <Controller
-        name="memberType"
-        control={control}
-        render={({field}) => (
-          <Radios label="是否為高鐵會員" {...field} options={memberOptions} />
-        )}
-      />
-      <Typography color="error">{formState.errors.email?.message}</Typography>
-      <Button fullWidth variant="contained" type="submit">
-        預約訂票
-      </Button>
-    </Form>
+            variant="outlined"
+            href="/reservation"
+            LinkComponent={NextLink}
+          >
+            查看訂票紀錄
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 };
 
