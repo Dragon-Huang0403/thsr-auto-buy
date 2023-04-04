@@ -1,1 +1,3 @@
-export {ticketFlow} from './ticketFlow';
+import {ticketFlow} from './ticketFlow';
+
+export default ticketFlow;

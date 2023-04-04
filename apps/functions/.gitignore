@@ -20,3 +20,5 @@ typings/
 # Node.js dependency directory
 node_modules/
 
+# env
+.secret.local

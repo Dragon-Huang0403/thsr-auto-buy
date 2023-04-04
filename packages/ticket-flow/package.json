@@ -1,10 +1,11 @@
 {
   "name": "ticket-flow",
   "version": "1.0.0",
-  "main": "build/src/index.js",
-  "types": "build/src/index.d.ts",
+  "type": "module",
+  "types": "./build/index.d.ts",
+  "exports": "./build/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsup",
     "test": "vitest run",
     "test:dev": "vitest",
     "test:ui": "vitest --ui",
@@ -31,6 +32,7 @@
     "taiwan-id": "workspace:*",
     "tdx-api": "workspace:*",
     "tsconfig": "workspace:*",
+    "tsup": "^6.7.0",
     "tsx": "^3.12.6",
     "typescript": "^5.0.2",
     "vite": "^4.1.2",

@@ -1,12 +1,12 @@
 {
   "name": "functions",
+  "type": "module",
   "scripts": {
     "lint": "run-p lint:style lint:type",
     "lint:style": "eslint --ext .js,.ts .",
     "lint:type": "tsc --noEmit",
     "clean": "rimraf .turbo build node_modules",
-    "build": "tsc",
-    "build:watch": "tsc --watch",
+    "build": "tsup",
     "serve": "npm run build && firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
@@ -16,16 +16,20 @@
   "engines": {
     "node": "16"
   },
-  "main": "lib/index.js",
+  "main": "build/index.js",
   "dependencies": {
+    "crawler": "workspace:*",
+    "database": "workspace:*",
     "firebase-admin": "^11.5.0",
-    "firebase-functions": "^4.2.0"
+    "firebase-functions": "^4.2.1",
+    "ticket-flow": "workspace:*"
   },
   "devDependencies": {
     "eslint": "^8.9.0",
     "eslint-config-custom": "workspace:*",
-    "tsconfig": "workspace:*",
     "firebase-functions-test": "^3.0.0",
+    "tsconfig": "workspace:*",
+    "tsup": "^6.7.0",
     "typescript": "~5.0.2"
   },
   "private": true
