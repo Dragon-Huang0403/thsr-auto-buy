@@ -5,12 +5,12 @@
     "lint": "run-p lint:style lint:type",
     "lint:style": "eslint --ext .js,.ts .",
     "lint:type": "tsc --noEmit",
-    "clean": "rimraf .turbo build node_modules",
+    "clean": "rimraf .turbo build node_modules _isolated_",
     "build": "tsup",
     "serve": "npm run build && firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
-    "deploy": "firebase deploy --only functions",
+    "deploy": "bash ./deploy.sh",
     "logs": "firebase functions:log"
   },
   "engines": {

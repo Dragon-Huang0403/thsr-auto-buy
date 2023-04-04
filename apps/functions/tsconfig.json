@@ -3,5 +3,6 @@
   "compilerOptions": {
     "incremental": false
   },
-  "include": ["src", "tsup.config.ts"]
+  "include": ["src", "tsup.config.ts"],
+  "exclude": ["_isolated_"]
 }

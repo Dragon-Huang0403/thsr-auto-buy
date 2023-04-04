@@ -8,7 +8,9 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // https://github.com/prisma/prisma/issues/4769#issuecomment-750018603
+  binaryTargets = ["native", "debian-openssl-1.1.x"]
 }
 
 model Reservation {
