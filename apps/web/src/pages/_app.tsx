@@ -8,6 +8,7 @@ import type {ReactElement, ReactNode} from 'react';
 import {CustomAlertProvider} from '~/components/CustomAlert';
 import {DefaultLayout} from '~/components/DefaultLayout';
 import {SnackbarProvider} from '~/components/Snackbar';
+import TermsOfUseDialog from '~/components/TermsOfUseDialog';
 import {StoreProvider} from '~/utils/store';
 import {trpc} from '~/utils/trpc';
 
@@ -32,6 +33,7 @@ const MyApp = (({Component, pageProps}: AppPropsWithLayout) => {
       <CustomAlertProvider>
         <SnackbarProvider>
           <StoreProvider>
+            <TermsOfUseDialog />
             {getLayout(<Component {...pageProps} />)}
           </StoreProvider>
         </SnackbarProvider>
