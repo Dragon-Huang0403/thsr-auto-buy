@@ -1,6 +1,5 @@
+import {PrismaClient} from '@prisma/client';
 import {crawlDiscounts, crawlSpecialDays} from 'crawler';
-
-import {prisma, PrismaClient} from './client';
 
 async function seedDiscount(prisma: PrismaClient) {
   await prisma.discount.deleteMany({});
@@ -17,6 +16,7 @@ async function seedSpecialBookDay(prisma: PrismaClient) {
 }
 
 async function main() {
+  const prisma = new PrismaClient();
   try {
     await seedDiscount(prisma);
     await seedSpecialBookDay(prisma);
