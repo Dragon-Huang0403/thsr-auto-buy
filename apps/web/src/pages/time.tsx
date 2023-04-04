@@ -61,8 +61,8 @@ const TimePage: NextPageWithLayout = () => {
         display: 'flex',
         flexDirection: 'column',
         gap: 2,
-        px: 1,
-        pt: 2,
+        px: 2,
+        pt: 4,
         pb: 4,
         overflow: 'auto',
       }}
@@ -129,14 +129,15 @@ const TimePage: NextPageWithLayout = () => {
             {...field}
             renderInput={params => <TextField {...params} fullWidth />}
             label="選擇時間"
+            ampm={false}
             minTime={minTime}
             maxTime={maxTime}
             minutesStep={5}
-            inputFormat="hh:mm aa"
+            inputFormat="HH:mm"
           />
         )}
       />
-      <Button fullWidth variant="contained" type="submit">
+      <Button fullWidth variant="contained" type="submit" sx={{mt: 2}}>
         查詢
       </Button>
     </Form>

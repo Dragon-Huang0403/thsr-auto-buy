@@ -1,5 +1,13 @@
 import {zodResolver} from '@hookform/resolvers/zod';
-import {Button, styled, TextField, Typography} from '@mui/material';
+import {SwapVert} from '@mui/icons-material';
+import {
+  Box,
+  Button,
+  IconButton,
+  styled,
+  TextField,
+  Typography,
+} from '@mui/material';
 import {DatePicker, TimePicker} from '@mui/x-date-pickers';
 import {BookingMethod} from '@prisma/client';
 import React from 'react';
@@ -27,7 +35,15 @@ const Form = styled('form')({});
 
 const IndexPage: NextPageWithLayout = () => {
   const {updateStore, data} = useStore();
-  const {control, formState, handleSubmit, watch, setError} = useForm({
+  const {
+    control,
+    formState,
+    handleSubmit,
+    watch,
+    setError,
+    getValues,
+    setValue,
+  } = useForm({
     defaultValues: data,
     resolver: zodResolver(reservationSchema),
   });
@@ -42,9 +58,20 @@ const IndexPage: NextPageWithLayout = () => {
       setError('trainNo', {message: '車號錯誤'});
       return;
     }
+    if (data.endStation === data.startStation) {
+      setError('endStation', {message: '到達站與啟程站不得相同'});
+      return;
+    }
     addReservation.mutate(data, {onSuccess: console.log});
   });
   const bookingMethod = watch('bookingMethod');
+
+  const swapStations = () => {
+    const startStation = getValues('startStation');
+    const endStation = getValues('endStation');
+    setValue('endStation', startStation);
+    setValue('startStation', endStation);
+  };
   return (
     <Form
       onSubmit={onSubmit}
@@ -52,8 +79,8 @@ const IndexPage: NextPageWithLayout = () => {
         display: 'flex',
         flexDirection: 'column',
         gap: 2,
-        px: 1,
-        pt: 2,
+        px: 2,
+        pt: 4,
         pb: 4,
         overflow: 'auto',
       }}
@@ -65,11 +92,37 @@ const IndexPage: NextPageWithLayout = () => {
           <Select label="啟程站" {...field} options={stationOptions} />
         )}
       />
+      <Box sx={{position: 'relative', my: -1}}>
+        <IconButton
+          sx={{
+            position: 'absolute',
+            zIndex: 100,
+            left: '50%',
+            top: '50%',
+            translate: '-50% -50%',
+            bgcolor: theme => theme.palette.common.white,
+            border: theme => `1px solid ${theme.palette.grey[500]}`,
+            borderRadius: '50%',
+            '&:hover': {
+              bgcolor: theme => theme.palette.common.white,
+            },
+          }}
+          onClick={swapStations}
+        >
+          <SwapVert />
+        </IconButton>
+      </Box>
       <Controller
         name="endStation"
         control={control}
         render={({field}) => (
-          <Select label="到達站" {...field} options={stationOptions} />
+          <Select
+            label="到達站"
+            {...field}
+            options={stationOptions}
+            error={!!formState.errors.endStation}
+            helperText={formState.errors.endStation?.message}
+          />
         )}
       />
       <Controller
@@ -117,10 +170,11 @@ const IndexPage: NextPageWithLayout = () => {
               {...field}
               renderInput={params => <TextField {...params} fullWidth />}
               label="選擇時間"
+              ampm={false}
               minTime={minTime}
               maxTime={maxTime}
               minutesStep={5}
-              inputFormat="hh:mm aa"
+              inputFormat="HH:mm"
             />
           )}
         />
