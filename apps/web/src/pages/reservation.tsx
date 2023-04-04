@@ -24,7 +24,7 @@ const ReservationPage: NextPageWithLayout = () => {
   });
 
   const taiwanId = watch('taiwanId');
-  const {data: reservations, refetch} = trpc.reservation.byTaiwanId.useQuery(
+  const reservationQuery = trpc.reservation.byTaiwanId.useQuery(
     {taiwanId},
     {
       keepPreviousData: true,
@@ -36,11 +36,11 @@ const ReservationPage: NextPageWithLayout = () => {
 
   const onSubmit = handleSubmit(data => {
     updateStore(data);
-    refetch();
+    reservationQuery.refetch();
   });
   const deleteMutation = trpc.reservation.delete.useMutation({
     onSuccess: () => {
-      refetch();
+      reservationQuery.refetch();
       snackbar.open({
         message: '刪除成功',
         autoHideDuration: 3_000,
@@ -90,7 +90,7 @@ const ReservationPage: NextPageWithLayout = () => {
         </Button>
       </Form>
       <Box sx={{display: 'flex', flexDirection: 'column', gap: 2, my: 2}}>
-        {reservations?.map(reservation => (
+        {reservationQuery.data?.map(reservation => (
           <ReservationItem
             key={reservation.id}
             reservation={reservation}
@@ -98,7 +98,9 @@ const ReservationPage: NextPageWithLayout = () => {
           />
         ))}
       </Box>
-      <LoadingBackdrop open={deleteMutation.isLoading} />
+      <LoadingBackdrop
+        open={deleteMutation.isLoading || reservationQuery.isFetching}
+      />
     </Box>
   );
 };
