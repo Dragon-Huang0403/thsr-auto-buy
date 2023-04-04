@@ -18,7 +18,7 @@ import {
 import {BookingMethod, DiscountType} from '@prisma/client';
 import NextLink from 'next/link';
 import {useRouter} from 'next/router';
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {z} from 'zod';
 
 import {discountTypes, stationObjects} from '~/utils/constants';
@@ -45,6 +45,9 @@ const SearchTrain: NextPageWithLayout = () => {
     [DiscountType.earlyBird]: false,
     [DiscountType.college]: false,
   });
+  const [isScrollIntoViewDone, setIsScrollIntoViewDone] = useState(false);
+
+  const scrollElementRef = useRef<null | HTMLElement>(null);
 
   const {updateStore} = useStore();
   const router = useRouter();
@@ -55,10 +58,18 @@ const SearchTrain: NextPageWithLayout = () => {
     isError,
     error,
     isLoading,
+    isSuccess,
   } = trpc.time.search.useQuery(
     {ticketDate: routerQuery?.ticketDate as Date},
     {enabled: !!routerQuery},
   );
+
+  useEffect(() => {
+    if (isSuccess) {
+      scrollElementRef?.current?.scrollIntoView();
+      setIsScrollIntoViewDone(true);
+    }
+  }, [isSuccess]);
 
   if (!routerQuery || isError) {
     return (
@@ -84,7 +95,7 @@ const SearchTrain: NextPageWithLayout = () => {
     );
   }
 
-  const {startStation, endStation} = routerQuery;
+  const {startStation, endStation, ticketDate} = routerQuery;
   const _trainItems = handleTrainItem(timeTable, routerQuery);
   const trainItems = _trainItems.filter(item =>
     objectKeys(discountFilter)
@@ -98,6 +109,9 @@ const SearchTrain: NextPageWithLayout = () => {
         return hasDiscount;
       })
       .every(shouldRender => shouldRender),
+  );
+  const defaultDisplayIndex = trainItems.findIndex(
+    item => item.departureTime > ticketDate,
   );
 
   const handleReserveTrain = (trainNo: string) => {
@@ -157,8 +171,15 @@ const SearchTrain: NextPageWithLayout = () => {
           />
         ))}
       </Box>
-      <Box sx={{overflow: 'auto', height: 'calc(100% - 130px)', pb: 2}}>
-        {trainItems.map(trainItem => (
+      <Box
+        sx={{
+          overflow: 'auto',
+          height: 'calc(100% - 130px)',
+          pb: 2,
+          visibility: isScrollIntoViewDone ? 'visible' : 'hidden',
+        }}
+      >
+        {trainItems.map((trainItem, i) => (
           <Box
             key={trainItem.trainInfo.TrainNo}
             sx={{
@@ -169,6 +190,7 @@ const SearchTrain: NextPageWithLayout = () => {
               px: 2,
               py: 1,
             }}
+            ref={i === defaultDisplayIndex ? scrollElementRef : undefined}
           >
             <Box
               sx={{

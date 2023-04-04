@@ -75,12 +75,7 @@ export function handleTrainItem(
       };
     })
     .filter(notEmpty)
-    .sort((a, b) => a.departureTime.getTime() - b.departureTime.getTime())
-    // TODO: use scroll in to the item instead of filter
-    .filter(
-      item =>
-        item.departureTime.getTime() > ticketDate.getTime() - 30 * 60 * 1000,
-    );
+    .sort((a, b) => a.departureTime.getTime() - b.departureTime.getTime());
 
   return result;
 }
