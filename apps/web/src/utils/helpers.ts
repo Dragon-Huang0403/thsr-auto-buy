@@ -84,3 +84,11 @@ export function handleTrainItem(
 
   return result;
 }
+
+export function objectKeys<
+  T extends Record<string, unknown>,
+  Key extends keyof T,
+>(object: T) {
+  const keys = Object.keys(object) as Key[];
+  return keys;
+}

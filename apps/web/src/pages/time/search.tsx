@@ -2,28 +2,27 @@ import {
   ArrowBackRounded,
   DirectionsTransitRounded,
   EastRounded,
-  ExpandMore,
   KeyboardDoubleArrowRightRounded,
   ScheduleRounded,
 } from '@mui/icons-material';
 import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
   Box,
   Button,
+  Checkbox,
   Chip,
+  FormControlLabel,
+  FormLabel,
   IconButton,
   Typography,
 } from '@mui/material';
-import {BookingMethod} from '@prisma/client';
+import {BookingMethod, DiscountType} from '@prisma/client';
 import NextLink from 'next/link';
 import {useRouter} from 'next/router';
-import React from 'react';
+import React, {useState} from 'react';
 import {z} from 'zod';
 
 import {discountTypes, stationObjects} from '~/utils/constants';
-import {handleTrainItem} from '~/utils/helpers';
+import {handleTrainItem, objectKeys} from '~/utils/helpers';
 import {timeSearchSchema} from '~/utils/schema';
 import {useStore} from '~/utils/store';
 import {trpc} from '~/utils/trpc';
@@ -42,6 +41,11 @@ const querySchema = timeSearchSchema
   .catch(null);
 
 const SearchTrain: NextPageWithLayout = () => {
+  const [discountFilter, setDiscountFilter] = useState({
+    [DiscountType.earlyBird]: false,
+    [DiscountType.college]: false,
+  });
+
   const {updateStore} = useStore();
   const router = useRouter();
   const routerQuery = querySchema.parse(router.query);
@@ -81,7 +85,20 @@ const SearchTrain: NextPageWithLayout = () => {
   }
 
   const {startStation, endStation} = routerQuery;
-  const trainItems = handleTrainItem(timeTable, routerQuery);
+  const _trainItems = handleTrainItem(timeTable, routerQuery);
+  const trainItems = _trainItems.filter(item =>
+    objectKeys(discountFilter)
+      .map(discountType => {
+        if (!discountFilter[discountType]) {
+          return true;
+        }
+        const hasDiscount = item.discounts.some(
+          discount => discount.type === discountType,
+        );
+        return hasDiscount;
+      })
+      .every(shouldRender => shouldRender),
+  );
 
   const handleReserveTrain = (trainNo: string) => {
     updateStore({
@@ -91,6 +108,10 @@ const SearchTrain: NextPageWithLayout = () => {
       bookingMethod: BookingMethod.trainNo,
     });
     router.push('/');
+  };
+
+  const handleDiscountCheckedOnChange = (type: DiscountType) => {
+    setDiscountFilter(prev => ({...prev, [type]: !prev[type]}));
   };
 
   return (
@@ -117,37 +138,68 @@ const SearchTrain: NextPageWithLayout = () => {
         <KeyboardDoubleArrowRightRounded />
         <Typography variant="h5">{stationObjects[endStation].name}</Typography>
       </Box>
-
-      <Box sx={{overflow: 'auto', height: 'calc(100% - 60px)', pb: 2}}>
-        {trainItems.map(trainItem => (
-          <Accordion
-            key={trainItem.trainInfo.TrainNo}
-            disableGutters
-            sx={{border: theme => `1px solid ${theme.palette.divider}`}}
-          >
-            <AccordionSummary expandIcon={<ExpandMore />}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  width: '100%',
-                  pr: 2,
+      <FormLabel component="legend" sx={{px: 2}}>
+        僅顯示優惠車次
+      </FormLabel>
+      <Box sx={{display: 'flex', gap: 2, px: 2}}>
+        {objectKeys(discountFilter).map(discountType => (
+          <FormControlLabel
+            key={discountType}
+            label={`${discountTypes[discountType]}優惠`}
+            control={
+              <Checkbox
+                checked={discountFilter[discountType]}
+                onChange={() => {
+                  handleDiscountCheckedOnChange(discountType);
                 }}
-              >
+              />
+            }
+          />
+        ))}
+      </Box>
+      <Box sx={{overflow: 'auto', height: 'calc(100% - 130px)', pb: 2}}>
+        {trainItems.map(trainItem => (
+          <Box
+            key={trainItem.trainInfo.TrainNo}
+            sx={{
+              border: theme => `1px solid ${theme.palette.divider}`,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1,
+              px: 2,
+              py: 1,
+            }}
+          >
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                width: '100%',
+                pr: 2,
+                py: 1,
+              }}
+            >
+              <Box sx={{display: 'flex', gap: 1}}>
                 <Typography>{trainItem.startStop.DepartureTime}</Typography>
                 <EastRounded />
-                <Typography>{trainItem.endStop.DepartureTime}</Typography>
+                <Typography>{trainItem.endStop.ArrivalTime}</Typography>
+              </Box>
+              <Box sx={{display: 'flex', gap: 1}}>
                 <ScheduleRounded fontSize="small" />
                 <Typography variant="body2">{trainItem.duration}</Typography>
+              </Box>
+              <Box sx={{display: 'flex', gap: 1}}>
                 <DirectionsTransitRounded fontSize="small" />
                 <Typography>{trainItem.trainInfo.TrainNo}</Typography>
               </Box>
-            </AccordionSummary>
-            <AccordionDetails sx={{display: 'flex', flexDirection: 'column'}}>
-              <Box sx={{display: 'flex'}}>
-                <Box sx={{display: 'flex', gap: 1}}>
-                  {trainItem.discounts.map(discount => {
+            </Box>
+            <Box sx={{display: 'flex'}}>
+              <Box sx={{display: 'flex', gap: 1}}>
+                {trainItem.discounts.length === 0 ? (
+                  <Typography>此班次無早鳥及大學生優惠</Typography>
+                ) : (
+                  trainItem.discounts.map(discount => {
                     const {minDiscountRatio} = discount;
                     const ratio =
                       minDiscountRatio % 10 === 0
@@ -155,20 +207,20 @@ const SearchTrain: NextPageWithLayout = () => {
                         : minDiscountRatio.toString();
                     const label = `${discountTypes[discount.type]} ${ratio} 折`;
                     return <Chip key={discount.type} label={label} />;
-                  })}
-                </Box>
-                <Button
-                  variant="contained"
-                  sx={{ml: 'auto'}}
-                  onClick={() => {
-                    handleReserveTrain(trainItem.trainInfo.TrainNo);
-                  }}
-                >
-                  預約訂票
-                </Button>
+                  })
+                )}
               </Box>
-            </AccordionDetails>
-          </Accordion>
+              <Button
+                variant="contained"
+                sx={{ml: 'auto'}}
+                onClick={() => {
+                  handleReserveTrain(trainItem.trainInfo.TrainNo);
+                }}
+              >
+                預約訂票
+              </Button>
+            </Box>
+          </Box>
         ))}
       </Box>
     </Box>
