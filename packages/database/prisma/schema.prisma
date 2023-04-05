@@ -55,7 +55,7 @@ model TicketResult {
 model TicketError {
   id            Int             @id @default(autoincrement())
   message       String
-  errorType     TicketErrorType
+  errorType     TicketErrorType @default(unknown)
   createdAt     DateTime        @default(now())
   reservation   Reservation     @relation(fields: [reservationId], references: [id])
   reservationId Int
