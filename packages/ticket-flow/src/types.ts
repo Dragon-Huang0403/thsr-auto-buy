@@ -7,8 +7,13 @@ import {
   timeOptions,
   tripTypeValues,
 } from './utils/constants';
-import {memberValuesSchema, trainItemSchema} from './utils/schema';
+import {
+  memberValuesSchema,
+  ticketResultSchema,
+  trainItemSchema,
+} from './utils/schema';
 
+export type TicketResult = z.infer<typeof ticketResultSchema>;
 type StationValues = typeof stationValues;
 type Station = keyof StationValues;
 type StationValue = StationValues[Station];

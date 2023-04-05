@@ -130,3 +130,10 @@ export function getMemberRequestData(
   }
   throw new Error('Not support business member type yet');
 }
+
+export function isCaptchaError(error: unknown) {
+  if (error instanceof Error) {
+    return error.message.toLowerCase().includes('captcha');
+  }
+  return false;
+}
