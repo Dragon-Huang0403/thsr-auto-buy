@@ -47,7 +47,7 @@ model TicketResult {
   arrivalTime   String
   duration      String
   totalPrice    Int
-  creatdAt      DateTime    @default(now())
+  createdAt     DateTime    @default(now())
   reservation   Reservation @relation(fields: [reservationId], references: [id])
   reservationId Int         @unique
 }
@@ -85,7 +85,7 @@ enum DiscountType {
 }
 
 enum TicketErrorType {
-  solvingCaptchaWrongy
+  solvingCaptchaWrong
   internalServerError
   unknown
 }
