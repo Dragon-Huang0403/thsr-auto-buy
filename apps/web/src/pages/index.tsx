@@ -13,9 +13,11 @@ import {
 } from '@mui/material';
 import {DatePicker, TimePicker} from '@mui/x-date-pickers';
 import {BookingMethod} from '@prisma/client';
+import {addMonths} from 'date-fns';
 import NextLink from 'next/link';
 import React from 'react';
 import {Controller, useForm} from 'react-hook-form';
+import {z} from 'zod';
 
 import LoadingBackdrop from '~/components/LoadingBackdrop';
 import {
@@ -39,7 +41,7 @@ import {NextPageWithLayout} from './_app';
 const Form = styled('form')({});
 
 const IndexPage: NextPageWithLayout = () => {
-  const {updateStore, data} = useStore();
+  const {updateStore, data: store} = useStore();
   const {
     control,
     formState,
@@ -49,7 +51,7 @@ const IndexPage: NextPageWithLayout = () => {
     getValues,
     setValue,
   } = useForm({
-    defaultValues: data,
+    defaultValues: store,
     resolver: zodResolver(reservationSchema),
   });
 
@@ -57,7 +59,8 @@ const IndexPage: NextPageWithLayout = () => {
 
   const addReservation = trpc.reservation.add.useMutation();
 
-  const onSubmit = handleSubmit(data => {
+  const onSubmit = handleSubmit(_data => {
+    const data = _data as z.infer<typeof reservationSchema>;
     updateStore(data);
     const isBookByTrainNo = data.bookingMethod === BookingMethod.trainNo;
     const isTrainNoAllDigit = /^\d{3,4}$/.test(data.trainNo);
@@ -71,6 +74,7 @@ const IndexPage: NextPageWithLayout = () => {
     }
     addReservation.mutate(data, {
       onSuccess: () => {
+        utils.reservation.byTaiwanId.invalidate({taiwanId: data.taiwanId});
         utils.reservation.byTaiwanId.prefetch({taiwanId: data.taiwanId});
       },
     });
@@ -83,6 +87,17 @@ const IndexPage: NextPageWithLayout = () => {
     setValue('endStation', startStation);
     setValue('startStation', endStation);
   };
+  const {data: minDate} = trpc.time.minReservingDate.useQuery(undefined, {
+    onSuccess: minDate => {
+      if (!getValues('ticketDate')) {
+        setValue('ticketDate', minDate);
+      }
+      if (!store.ticketDate) {
+        updateStore({ticketDate: minDate});
+      }
+    },
+    initialData: () => addMonths(new Date(), 1),
+  });
 
   return (
     <>
@@ -145,6 +160,8 @@ const IndexPage: NextPageWithLayout = () => {
             <DatePicker
               {...field}
               label={'訂票日期'}
+              minDate={minDate}
+              maxDate={addMonths(minDate, 1)}
               inputFormat="yyyy / MM / dd"
               renderInput={params => (
                 <TextField {...params} helperText={null} fullWidth />

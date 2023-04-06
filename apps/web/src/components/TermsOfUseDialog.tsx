@@ -20,6 +20,7 @@ const localStorageKey = {
 
 function TermsOfUseDialog() {
   const [isDialogOpen, setIsDialogOpen] = useState(() =>
+    typeof window !== 'undefined' &&
     localStorage.getItem(localStorageKey.termsOfUse.notShowAgain)
       ? false
       : true,

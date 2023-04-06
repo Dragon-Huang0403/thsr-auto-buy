@@ -2,9 +2,11 @@ import {zodResolver} from '@hookform/resolvers/zod';
 import {SwapVert} from '@mui/icons-material';
 import {Box, Button, IconButton, styled, TextField} from '@mui/material';
 import {DatePicker, TimePicker} from '@mui/x-date-pickers';
+import {addMonths} from 'date-fns';
 import {useRouter} from 'next/router';
 import React from 'react';
 import {Controller, useForm} from 'react-hook-form';
+import {z} from 'zod';
 
 import {maxTime, minTime, stationOptions} from '~/utils/constants';
 import {useStore} from '~/utils/store';
@@ -18,20 +20,22 @@ const Form = styled('form')({});
 
 const TimePage: NextPageWithLayout = () => {
   const router = useRouter();
-  const {data, updateStore} = useStore();
+  const {data: store, updateStore} = useStore();
 
   const utils = trpc.useContext();
   const {control, handleSubmit, setError, formState, setValue, getValues} =
     useForm({
       defaultValues: {
-        startStation: data.startStation,
-        endStation: data.endStation,
-        ticketDate: data.ticketDate,
+        startStation: store.startStation,
+        endStation: store.endStation,
+        ticketDate: store.ticketDate,
       },
       resolver: zodResolver(timeSearchSchema),
     });
 
-  const onSubmit = handleSubmit(data => {
+  const onSubmit = handleSubmit(_data => {
+    const data = _data as z.infer<typeof timeSearchSchema>;
+
     if (data.endStation === data.startStation) {
       setError('endStation', {message: '到達站與啟程站不得相同'});
       return;
@@ -53,6 +57,18 @@ const TimePage: NextPageWithLayout = () => {
     setValue('endStation', startStation);
     setValue('startStation', endStation);
   };
+
+  const {data: minDate} = trpc.time.minReservingDate.useQuery(undefined, {
+    onSuccess: minDate => {
+      if (!getValues('ticketDate')) {
+        setValue('ticketDate', minDate);
+      }
+      if (!store.ticketDate) {
+        updateStore({ticketDate: minDate});
+      }
+    },
+    initialData: () => addMonths(new Date(), 1),
+  });
 
   return (
     <Form
@@ -114,6 +130,8 @@ const TimePage: NextPageWithLayout = () => {
           <DatePicker
             {...field}
             label={'訂票日期'}
+            minDate={minDate}
+            maxDate={addMonths(minDate, 1)}
             inputFormat="yyyy / MM / dd"
             renderInput={params => (
               <TextField {...params} helperText={null} fullWidth />

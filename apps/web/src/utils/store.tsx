@@ -9,9 +9,10 @@ import {createContext, ReactNode, useContext, useState} from 'react';
 import {z} from 'zod';
 
 import {reservationSchema} from './schema';
-import {trpc} from './trpc';
 
-type StoreData = z.infer<typeof reservationSchema>;
+type StoreData = Omit<z.infer<typeof reservationSchema>, 'ticketDate'> & {
+  ticketDate: Date | null;
+};
 
 type Store = {
   data: StoreData;
@@ -24,53 +25,39 @@ interface StoreProviderProps {
   children: ReactNode;
 }
 
+const defaultValues: StoreData = {
+  startStation: Station.NanGang,
+  endStation: Station.TaiPei,
+  ticketDate: null,
+  bookingMethod: BookingMethod.time,
+  trainNo: '',
+  carType: CarType.Standard,
+  seatType: SeatType.NoRequired,
+  taiwanId: '',
+  email: '',
+  phone: '',
+  tickets: {
+    adultTicket: 1,
+    childTicket: 0,
+    disabledTicket: 0,
+    elderTicket: 0,
+    collegeTicket: 0,
+  },
+  memberType: MemberType.NotMember,
+};
+
 export function StoreProvider({children}: StoreProviderProps) {
-  const [store, setStore] = useState<StoreData>();
+  const [store, setStore] = useState<StoreData>(defaultValues);
 
   const updateStore = (values: Partial<StoreData>) => {
-    setStore(prev => prev && {...prev, ...values});
+    setStore(prev => ({...prev, ...values}));
   };
 
-  const shouldRender = !!store;
-
-  trpc.time.minReservingDate.useQuery(undefined, {
-    onSuccess: data => {
-      const ticketDate = data.minDate;
-      const defaultData = getDefaultValues(ticketDate);
-      setStore(defaultData);
-    },
-    enabled: !shouldRender,
-  });
-
   return (
-    <StoreContext.Provider value={{data: store as StoreData, updateStore}}>
-      {shouldRender && children}
+    <StoreContext.Provider value={{data: store, updateStore}}>
+      {children}
     </StoreContext.Provider>
   );
 }
 
 export const useStore = () => useContext(StoreContext);
-
-function getDefaultValues(ticketDate: Date) {
-  const defaultValues: z.infer<typeof reservationSchema> = {
-    startStation: Station.NanGang,
-    endStation: Station.TaiPei,
-    ticketDate,
-    bookingMethod: BookingMethod.time,
-    trainNo: '',
-    carType: CarType.Standard,
-    seatType: SeatType.NoRequired,
-    taiwanId: '',
-    email: '',
-    phone: '',
-    tickets: {
-      adultTicket: 1,
-      childTicket: 0,
-      disabledTicket: 0,
-      elderTicket: 0,
-      collegeTicket: 0,
-    },
-    memberType: MemberType.NotMember,
-  };
-  return defaultValues;
-}
