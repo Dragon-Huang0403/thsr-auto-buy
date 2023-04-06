@@ -1,73 +1,70 @@
-# Turborepo starter
+# THSR Auto Buy
 
-This is an official pnpm starter turborepo.
+<p align="middle">
+  <img src="https://assets.vercel.com/image/upload/v1588805858/repositories/vercel/logo.png" width="100" style="margin-right: 10px;"/>
+  <img src="https://camo.githubusercontent.com/e1e113df83e7731fdb90f6f0ab2eeb155fd1b48c27d99814dcf1c23c0acdc6a2/68747470733a2f2f6173736574732e76657263656c2e636f6d2f696d6167652f75706c6f61642f76313636323133303535392f6e6578746a732f49636f6e5f6461726b5f6261636b67726f756e642e706e67" width="100" style="margin-right: 10px;"/>
+  <img src="https://cdn.cdnlogo.com/logos/r/85/react.svg" width="100" style="margin-right: 10px;"/>
+  <img src="https://trpc.io/img/logo.svg" width="100" style="margin-right: 10px;" />
+  <img src="https://cdn.cdnlogo.com/logos/f/67/firebase.svg" width="100" />
+</p>
 
-## What's inside?
+<p align="center"><a href="https://thsr-auto-buy.vercel.app/">✨ https://thsr-auto-buy.vercel.app/ ✨ </a></p>
 
-This turborepo uses [pnpm](https://pnpm.io) as a package manager. It includes the following packages/apps:
+## Features
 
-### Apps and Packages
+- Implement both [frontend](./apps/web/README.md) and [serverless backend](./apps/functions/README.md) for reserving auto booking ticket
+- Managing discounts and train searching
+- Auto calculate ticket start booking date
+- Update train discounts and special days every 2 AM with [cron-job](https://cron-job.org/en/)
+- Booking Ticket at every exactly midnight and retry until 2 AM
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `ui`: a stub React component library shared by both `web` and `docs` applications
+## Apps and Packages
+
+### Apps
+
+- `web`: Full-stack app for reserving ticket and searching trains with discounts
+- `functions`: Serverless backend for crawling and booking tickets with
+
+### Packages
+
+- `crawler`: crawling discounts and special days from thsr website
+- `database`: database models
+- `taiwan-id`: taiwanese id validator and generator
+- `tdx-api`: tdx api
+- `ticket-flow`: booking thsr ticket flow
 - `eslint-config-custom`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
 - `tsconfig`: `tsconfig.json`s used throughout the monorepo
 
 Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
 
-### Utilities
-
-This turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+## Setup
 
 ### Build
 
 To build all apps and packages, run the following command:
 
 ```
-cd my-turborepo
 pnpm run build
 ```
 
 ### Develop
 
-To develop all apps and packages, run the following command:
+To develop frontend, run the following command:
 
 ```
-cd my-turborepo
 pnpm run dev
 ```
 
-### Remote Caching
+## Difficulties and Experience
 
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup), then enter the following commands:
-
-```
-cd my-turborepo
-pnpm dlx turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your turborepo:
-
-```
-pnpm dlx turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+- Handled deploy firebase functions
+  - Firebase not support monorepo
+  - Prisma needed to set `binaryTargets` for running on Firebase functions
+- Handled booking ticket flow with cookies validation
+- Handled cleaning crawled data
+- Handled retry mechanism
+- Handled locale timezone (firebase cloud functions is run at utc+0 and frontend is utc+8)
+- Tried many **_free_** databases, finally choose PostgreSQL with [Supabase](https://supabase.com/) due to:
+  - Firebase firestore: it's not type safe enough and it is annoying to handle `TimeStamp` in firestore and convert it to `Date`
+  - MySQL with [PlanetScale](https://planetscale.com/): [Planet doesn't support foreign keys](https://www.prisma.io/docs/guides/database/planetscale#differences-to-consider)
+  - PostgreSQL with [fly.io](https://fly.io/): it is a mistake..., it is not supported outside applications to connect

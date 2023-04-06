@@ -1,3 +1,12 @@
+# Firebase Functions
+
+## Features
+
+- 📆 Handle database schedule jobs
+  - 🌞 Update Crawled data (discounts and special days)
+  - 📘 Book reservations at exactly midnight
+- ⚙️ Retry Mechanism
+
 ## Setup Secret
 
 Using Firebase CLI
@@ -7,6 +16,12 @@ firebase functions:secrets:set SECRET_NAME
 ```
 
 [reference](https://firebase.google.com/docs/functions/config-env#create-secret)
+
+## Develop
+
+```bash
+pnpm serve
+```
 
 ## Deploy
 
