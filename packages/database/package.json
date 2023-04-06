@@ -22,7 +22,7 @@
     "prebuild": "npm run generate",
     "predev": "npm run generate",
     "studio": "prisma studio",
-    "postinstall": "npm run generate"
+    "postinstall": "npm run build"
   },
   "dependencies": {
     "@prisma/client": "^3.10.0",
