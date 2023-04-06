@@ -71,6 +71,7 @@ export interface TicketFlowRequest {
   elderTicket: number;
   collegeTicket: number;
   memberType: MemberType;
+  waitUntilMidnight?: boolean;
   [key: string]: unknown;
 }
 

@@ -1,5 +1,5 @@
 import {format} from 'date-fns';
-import {utcToZonedTime} from 'date-fns-tz';
+import {formatInTimeZone, utcToZonedTime} from 'date-fns-tz';
 
 import {
   BookingOptions,
@@ -29,7 +29,13 @@ export async function sleep(time: number) {
   });
 }
 
-function getTimeTableValue(date: Date) {
+export async function waitingUntilMidnight() {
+  while (formatInTimeZone(new Date(), timeZone, 'H') !== '0') {
+    await sleep(500);
+  }
+}
+
+export function getTimeTableValue(date: Date) {
   const hourAndMinute = parseInt(format(date, 'HHmm'));
   const timeOption = timeOptions.find(option => option.time > hourAndMinute);
   if (!timeOption) {

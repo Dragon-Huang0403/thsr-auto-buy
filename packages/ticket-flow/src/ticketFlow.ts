@@ -4,7 +4,7 @@ import {visitBookingPage} from './steps';
 import {TicketFlowRequest, TicketResult} from './types';
 import {captchaSolver} from './utils/captchaSolver';
 import {createClient} from './utils/client';
-import {isCaptchaError} from './utils/helper';
+import {isCaptchaError, waitingUntilMidnight} from './utils/helper';
 
 export async function ticketFlow(
   request: TicketFlowRequest,
@@ -22,6 +22,11 @@ export async function ticketFlow(
       bookingMethod,
       captchaResult,
     };
+
+    if (request.waitUntilMidnight) {
+      await waitingUntilMidnight();
+    }
+
     if (request.bookingMethod === 'time') {
       const ticketResult = await bookByTimeFlow(data);
 
