@@ -1,7 +1,7 @@
 export const baseUrl = 'https://irs.thsrc.com.tw';
 
 export const bookingPageUrl = new URL('/IMINT/', baseUrl);
-export const timeZone = 'Asia/TaiPei';
+export const timeZone = 'Asia/Taipei';
 
 export const stationValues = {
   NanGang: '1',

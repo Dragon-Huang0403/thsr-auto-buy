@@ -40,4 +40,4 @@ export const secrets = {
   CAPTCHA_KEY: 'CAPTCHA_KEY',
 } as const;
 
-export const asiaTaiPei = 'Asia/TaiPei';
+export const asiaTaiPei = 'Asia/Taipei';
