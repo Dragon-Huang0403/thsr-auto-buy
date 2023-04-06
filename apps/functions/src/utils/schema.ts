@@ -29,4 +29,5 @@ export const ticketFlowRequestSchema = z.object({
   elderTicket: z.number(),
   collegeTicket: z.number(),
   memberType: z.enum(memberTypes),
+  waitUntilMidnight: z.boolean().optional(),
 });

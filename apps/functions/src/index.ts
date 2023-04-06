@@ -1,14 +1,15 @@
 import crawler from 'crawler';
-import {millisecondsInMinute, secondsInMinute} from 'date-fns';
+import {addDays, millisecondsInMinute, secondsInMinute} from 'date-fns';
 import * as functions from 'firebase-functions';
 import got from 'got';
 
-import {asiaEast, secrets} from './utils/constants';
+import {asiaEast, asiaTaiPei, secrets} from './utils/constants';
 import {
   getAsiaTaiPeiDate,
   getBookTicketUrl,
   handleTicketFlow,
   retryIfThrow,
+  sleep,
   withPrisma,
 } from './utils/helper';
 import {ticketFlowRequestSchema} from './utils/schema';
@@ -45,10 +46,101 @@ export const crawlSpecialDaysAndUpdate = functionBase
     });
   });
 
-export const getReservationsAndDispatch = functionBase
+export const dispatchReservationsBeforeMidnight = functionBase
   .runWith({
     secrets: [secrets.DATABASE_URL],
     timeoutSeconds: secondsInMinute * 2,
+  })
+  .pubsub.schedule('59 23 * * *')
+  .timeZone(asiaTaiPei)
+  .onRun(async () => {
+    await withPrisma(async prisma => {
+      const asiaTaiPeiDate = getAsiaTaiPeiDate();
+      const bookDate = addDays(asiaTaiPeiDate, 1);
+      const reservations = await prisma.reservation.findMany({
+        where: {
+          bookDate,
+          isDeleted: false,
+          ticketResult: null,
+        },
+      });
+      const bookTicketUrl = getBookTicketUrl();
+
+      while (new Date().getSeconds() < 45) {
+        await sleep(500);
+      }
+      functions.logger.info(`>> Dispatch ${reservations.length} jobs`);
+      await Promise.all(
+        reservations.map(async reservation => {
+          await got.post(bookTicketUrl, {
+            json: {...reservation, waitUntilMidnight: true},
+          });
+        }),
+      );
+    });
+  });
+
+export const dispatchReservationsAtZeroClockEveryFiveMinutes = functionBase
+  .runWith({
+    secrets: [secrets.DATABASE_URL],
+    timeoutSeconds: secondsInMinute,
+  })
+  .pubsub.schedule('5,10,15,20,25,30,35,40,45,50,55 0 * * *')
+  .timeZone(asiaTaiPei)
+  .onRun(async () => {
+    await withPrisma(async prisma => {
+      const bookDate = getAsiaTaiPeiDate();
+      const reservations = await prisma.reservation.findMany({
+        where: {
+          bookDate,
+          isDeleted: false,
+          ticketResult: null,
+        },
+      });
+      const bookTicketUrl = getBookTicketUrl();
+      functions.logger.info(`>> Dispatch ${reservations.length} jobs`);
+      await Promise.all(
+        reservations.map(async reservation => {
+          await got.post(bookTicketUrl, {
+            json: reservation,
+          });
+        }),
+      );
+    });
+  });
+
+export const dispatchReservationsAtOneClockEveryTenMinutes = functionBase
+  .runWith({
+    secrets: [secrets.DATABASE_URL],
+    timeoutSeconds: secondsInMinute,
+  })
+  .pubsub.schedule('*/10 1 * * *')
+  .timeZone(asiaTaiPei)
+  .onRun(async () => {
+    await withPrisma(async prisma => {
+      const bookDate = getAsiaTaiPeiDate();
+      const reservations = await prisma.reservation.findMany({
+        where: {
+          bookDate,
+          isDeleted: false,
+          ticketResult: null,
+        },
+      });
+      const bookTicketUrl = getBookTicketUrl();
+      functions.logger.info(`>> Dispatch ${reservations.length} jobs`);
+      await Promise.all(
+        reservations.map(async reservation => {
+          await got.post(bookTicketUrl, {
+            json: reservation,
+          });
+        }),
+      );
+    });
+  });
+export const dispatchReservationsOnRequest = functionBase
+  .runWith({
+    secrets: [secrets.DATABASE_URL],
+    timeoutSeconds: secondsInMinute,
   })
   .https.onRequest(async (request, response) => {
     await withPrisma(async prisma => {
@@ -61,12 +153,14 @@ export const getReservationsAndDispatch = functionBase
         },
       });
       const bookTicketUrl = getBookTicketUrl();
+      functions.logger.info(`>> Dispatch ${reservations.length} jobs`);
       await Promise.all(
         reservations.map(async reservation => {
-          await got.post(bookTicketUrl, {json: reservation});
+          await got.post(bookTicketUrl, {
+            json: reservation,
+          });
         }),
       );
-
       response.json({counts: reservations.length, data: reservations});
     });
   });

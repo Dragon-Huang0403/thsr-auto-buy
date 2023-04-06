@@ -70,7 +70,11 @@ export async function handleTicketFlow(
   }
 }
 
-async function sleep(delayMs: number) {
+/**
+ *
+ * @param delayMs time in milliseconds
+ */
+export async function sleep(delayMs: number) {
   return new Promise(res => {
     setTimeout(res, delayMs);
   });
