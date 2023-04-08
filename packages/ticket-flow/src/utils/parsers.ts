@@ -9,18 +9,19 @@ import {
   ticketResultSchema,
   trainItemSchema,
 } from './schema';
+import {TicketFlowError, TicketFlowErrorType} from './ticketFlowError';
 
 export function throwIfHasError(page: HTMLElement) {
   const hasCookiesExpiredError = page.querySelector('.error-card.unknown');
   if (hasCookiesExpiredError) {
-    throw new Error('Cookies expired');
+    throw new TicketFlowError(TicketFlowErrorType.cookiesExpired);
   }
 
   const hasServerInternalError = page.querySelector(
     '.error-card .error-content',
   );
   if (hasServerInternalError) {
-    throw new Error('THSR having internal server error');
+    throw new TicketFlowError(TicketFlowErrorType.thsrServerError);
   }
 
   const errorElements = page.querySelectorAll('span.feedbackPanelERROR');
@@ -33,9 +34,22 @@ export function throwIfHasError(page: HTMLElement) {
 
   const isCaptchaSolvedWrongError = errorMessages.includes('檢測碼輸入錯誤');
   if (isCaptchaSolvedWrongError) {
-    throw new Error('Solving captcha wrong');
+    throw new TicketFlowError(TicketFlowErrorType.solvingCaptchaWrong);
   }
-  throw new Error(errorMessages);
+  const isSoldOut = errorMessages.includes('座位已額滿');
+  if (isSoldOut) {
+    throw new TicketFlowError(TicketFlowErrorType.soldOut);
+  }
+
+  const isBadRequest = [
+    '去程您所選擇的日期超過目前開放預訂之日期',
+    '請輸入正確車次號碼',
+  ].some(str => errorMessages.includes(str));
+  if (isBadRequest) {
+    throw new TicketFlowError(TicketFlowErrorType.badRequest, errorMessages);
+  }
+
+  throw new TicketFlowError(TicketFlowErrorType.unknown, errorMessages);
 }
 
 export function parseBookingMethods(page: HTMLElement) {
@@ -51,7 +65,10 @@ export function parseBookingMethods(page: HTMLElement) {
   };
   const result = bookingMethodsSchema.safeParse(bookingMethods);
   if (!result.success) {
-    throw new Error('Parse booking methods failed');
+    throw new TicketFlowError(
+      TicketFlowErrorType.parsePageFailed,
+      'Parsing booking methods failed',
+    );
   }
   return result.data;
 }
@@ -62,7 +79,10 @@ export function parseCaptchaImageUrl(page: HTMLElement) {
   );
   const imagePathname = imageElement?.getAttribute('src');
   if (!imagePathname) {
-    throw new Error('Parse captcha image URL failed');
+    throw new TicketFlowError(
+      TicketFlowErrorType.parsePageFailed,
+      'Parsing captcha image URL failed',
+    );
   }
   const url = new URL(imagePathname, baseUrl);
   return url;
@@ -79,7 +99,10 @@ export function parseTrainItems(page: HTMLElement) {
   }));
   const result = z.array(trainItemSchema).nonempty().safeParse(trainItems);
   if (!result.success) {
-    throw new Error('Parse train items Failed');
+    throw new TicketFlowError(
+      TicketFlowErrorType.parsePageFailed,
+      'Parsing train items Failed',
+    );
   }
   return result.data;
 }
@@ -107,7 +130,10 @@ export function parseMemberValues(page: HTMLElement) {
   const result = memberValuesSchema.safeParse(data);
 
   if (!result.success) {
-    throw new Error('Parse member values failed');
+    throw new TicketFlowError(
+      TicketFlowErrorType.parsePageFailed,
+      'Parsing member values failed',
+    );
   }
   return result.data;
 }
@@ -135,7 +161,10 @@ export function parseTicketResult(page: HTMLElement) {
   const result = ticketResultSchema.safeParse(ticketResult);
 
   if (!result.success) {
-    throw new Error('Parse ticket result failed');
+    throw new TicketFlowError(
+      TicketFlowErrorType.parsePageFailed,
+      'Parsing ticket result failed',
+    );
   }
   return result.data;
 }

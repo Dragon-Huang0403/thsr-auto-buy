@@ -1,5 +1,6 @@
 import got from 'got';
 
+import {TicketFlowError, TicketFlowErrorType} from '../ticketFlowError';
 import {capSolverResponse} from './schema';
 
 // https://docs.capsolver.com/guide/recognition/ImageToTextTask.html#example-request
@@ -17,9 +18,14 @@ export async function capSolver(request: Request) {
     })
     .json();
   const result = capSolverResponse.safeParse(response);
+
   if (!result.success) {
-    throw new Error('Solve captcha failed');
+    throw new TicketFlowError(
+      TicketFlowErrorType.solvingCaptchaWrong,
+      `Parsing captcha response from capSolver failed, ${result.error.message}`,
+    );
   }
+
   return result.data.solution.text;
 }
 

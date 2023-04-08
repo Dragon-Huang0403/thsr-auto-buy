@@ -1,6 +1,7 @@
 import {got} from 'got';
 
 import {sleep} from '../helper';
+import {TicketFlowError, TicketFlowErrorType} from '../ticketFlowError';
 import {twoCaptchaResponseSchema} from './schema';
 
 // https://2captcha.com/2captcha-api#solving_normal_captcha
@@ -33,7 +34,10 @@ async function sendSolveCaptchaRequest({
     .json();
   const result = twoCaptchaResponseSchema.safeParse(response);
   if (!result.success || result.data.status === 0) {
-    throw new Error('Get two captcha response unexpected');
+    throw new TicketFlowError(
+      TicketFlowErrorType.solvingCaptchaWrong,
+      `Parsing captcha response from 2captcha failed`,
+    );
   }
   return result.data;
 }
@@ -58,7 +62,10 @@ async function getCaptchaResult({
   const result = twoCaptchaResponseSchema.safeParse(response);
 
   if (!result.success) {
-    throw new Error('Get two captcha response unexpected');
+    throw new TicketFlowError(
+      TicketFlowErrorType.solvingCaptchaWrong,
+      `Parsing captcha response from 2captcha failed`,
+    );
   }
 
   const {data} = result;
@@ -67,7 +74,10 @@ async function getCaptchaResult({
   }
 
   if (retry === 0) {
-    throw new Error('Solving captcha failed, retry too many times');
+    throw new TicketFlowError(
+      TicketFlowErrorType.solvingCaptchaWrong,
+      `Solving captcha failed, retry too many times`,
+    );
   }
 
   await sleep(second);

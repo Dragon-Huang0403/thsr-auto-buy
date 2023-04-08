@@ -5,6 +5,7 @@ import {TicketFlowRequest, TicketResult} from './types';
 import {captchaSolver} from './utils/captchaSolver';
 import {createClient} from './utils/client';
 import {isCaptchaError, waitingUntilMidnight} from './utils/helper';
+import {TicketFlowError, TicketFlowErrorType} from './utils/ticketFlowError';
 
 export async function ticketFlow(
   request: TicketFlowRequest,
@@ -35,10 +36,16 @@ export async function ticketFlow(
 
     const ticketResult = await bookByTrainNoFlow(data);
     return ticketResult;
-  } catch (e) {
-    if (retry > 0 && isCaptchaError(e)) {
+  } catch (error) {
+    if (retry > 0 && isCaptchaError(error)) {
       return ticketFlow(request, retry - 1);
     }
-    throw e;
+    if (!(error instanceof TicketFlowError)) {
+      throw new TicketFlowError(
+        TicketFlowErrorType.unknown,
+        (error as Error)?.message,
+      );
+    }
+    throw error;
   }
 }

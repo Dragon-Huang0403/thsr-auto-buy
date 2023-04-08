@@ -17,6 +17,7 @@ import {
   timeZone,
   tripTypeValues,
 } from './constants';
+import {TicketFlowError, TicketFlowErrorType} from './ticketFlowError';
 
 /**
  *
@@ -39,7 +40,10 @@ export function getTimeTableValue(date: Date) {
   const hourAndMinute = parseInt(format(date, 'HHmm'));
   const timeOption = timeOptions.find(option => option.time > hourAndMinute);
   if (!timeOption) {
-    throw new Error('Get Time Table Value Failed');
+    throw new TicketFlowError(
+      TicketFlowErrorType.badRequest,
+      'Get time table value failed',
+    );
   }
   return timeOption.value;
 }
@@ -134,12 +138,15 @@ export function getMemberRequestData(
         'on',
     } as const;
   }
-  throw new Error('Not support business member type yet');
+  throw new TicketFlowError(
+    TicketFlowErrorType.badRequest,
+    'Not support business member type yet',
+  );
 }
 
 export function isCaptchaError(error: unknown) {
-  if (error instanceof Error) {
-    return error.message.toLowerCase().includes('captcha');
+  if (error instanceof TicketFlowError) {
+    return error.type === TicketFlowErrorType.solvingCaptchaWrong;
   }
   return false;
 }
