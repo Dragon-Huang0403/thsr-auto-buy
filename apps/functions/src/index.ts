@@ -1,178 +1,88 @@
-import crawler from 'crawler';
-import {addDays, millisecondsInMinute, secondsInMinute} from 'date-fns';
+import {addDays, millisecondsInSecond, secondsInMinute} from 'date-fns';
 import * as functions from 'firebase-functions';
-import got from 'got';
 
 import {asiaEast, asiaTaiPei, secrets} from './utils/constants';
+import {getAsiaTaiPeiDate, retryIfThrow} from './utils/helper';
 import {
-  getAsiaTaiPeiDate,
-  getBookTicketUrl,
+  handleDispatchReservations,
   handleTicketFlow,
-  retryIfThrow,
-  sleep,
-  withPrisma,
-} from './utils/helper';
+  maxInstances,
+  updateDiscounts,
+  updateSpecialBookDays,
+} from './utils/lib';
+import {createPrismaClientWithoutPgBouncer} from './utils/prisma';
 import {ticketFlowRequestSchema} from './utils/schema';
-
-const {crawlDiscounts, crawlSpecialDays} = crawler;
 
 const functionBase = functions.region(asiaEast);
 
-export const crawlDiscountsAndUpdate = functionBase
-  .runWith({secrets: [secrets.DATABASE_URL], timeoutSeconds: secondsInMinute})
+export const updateTrainInfos = functionBase
+  .runWith({
+    secrets: [secrets.DATABASE_DIRECT_URL],
+    timeoutSeconds: secondsInMinute,
+  })
   .https.onRequest(async (_, response) => {
-    await withPrisma(async prisma => {
-      const [discounts] = await Promise.all([
-        crawlDiscounts(),
-        prisma.discount.deleteMany({}),
-      ]);
+    const prismaWithoutPgBouncer = createPrismaClientWithoutPgBouncer();
 
-      response.json({data: discounts, counts: discounts.length});
-      await prisma.discount.createMany({data: discounts});
-    });
+    functions.logger.info('>> Start update special book days');
+    const specialBookDay = await updateSpecialBookDays(prismaWithoutPgBouncer);
+    functions.logger.info('>> Finish update special book days');
+
+    functions.logger.info('>> Start update discounts');
+    const discounts = await updateDiscounts(prismaWithoutPgBouncer);
+    functions.logger.info('>> Finish update discounts');
+
+    await prismaWithoutPgBouncer.$disconnect();
+
+    response.json({discounts, specialBookDay});
   });
 
-export const crawlSpecialDaysAndUpdate = functionBase
-  .runWith({secrets: [secrets.DATABASE_URL]})
-  .https.onRequest(async (_, response) => {
-    await withPrisma(async prisma => {
-      const [specialDays] = await Promise.all([
-        crawlSpecialDays(),
-        prisma.specialBookDay.deleteMany({}),
-      ]);
-
-      response.json({data: specialDays, counts: specialDays.length});
-      await prisma.specialBookDay.createMany({data: specialDays});
-    });
-  });
-
+const dispatchTimeout = secondsInMinute * 2;
 export const dispatchReservationsBeforeMidnight = functionBase
   .runWith({
     secrets: [secrets.DATABASE_URL],
-    timeoutSeconds: secondsInMinute * 2,
+    timeoutSeconds: dispatchTimeout,
   })
-  .pubsub.schedule('59 23 * * *')
+  .pubsub.schedule('59 23 * * 0-4')
   .timeZone(asiaTaiPei)
   .onRun(async () => {
-    await withPrisma(async prisma => {
-      const asiaTaiPeiDate = getAsiaTaiPeiDate();
-      const bookDate = addDays(asiaTaiPeiDate, 1);
-      const reservations = await prisma.reservation.findMany({
-        where: {
-          bookDate,
-          isDeleted: false,
-          ticketResult: null,
-        },
-      });
-      const bookTicketUrl = getBookTicketUrl();
-
-      while (new Date().getSeconds() < 45) {
-        await sleep(500);
-      }
-      functions.logger.info(`>> Dispatch ${reservations.length} jobs`);
-      await Promise.all(
-        reservations.map(async reservation => {
-          await got.post(bookTicketUrl, {
-            json: {...reservation, waitUntilMidnight: true},
-          });
-        }),
-      );
-    });
+    const asiaTaiPeiDate = getAsiaTaiPeiDate();
+    const bookDate = addDays(asiaTaiPeiDate, 1);
+    await handleDispatchReservations(bookDate, {waitUntilMidnight: true});
   });
 
-export const dispatchReservationsAtZeroClockEveryFiveMinutes = functionBase
+export const dispatchReservationsAtZeroToOneClockEveryFiveMinutes = functionBase
   .runWith({
     secrets: [secrets.DATABASE_URL],
-    timeoutSeconds: secondsInMinute,
+    timeoutSeconds: dispatchTimeout,
   })
-  .pubsub.schedule('5,10,15,20,25,30,35,40,45,50,55 0 * * *')
+  .pubsub.schedule('5,10,15,20,25,30,35,40,45,50,55 0-1 * * 1-5')
   .timeZone(asiaTaiPei)
   .onRun(async () => {
-    await withPrisma(async prisma => {
-      const bookDate = getAsiaTaiPeiDate();
-      const reservations = await prisma.reservation.findMany({
-        where: {
-          bookDate,
-          isDeleted: false,
-          ticketResult: null,
-        },
-      });
-      const bookTicketUrl = getBookTicketUrl();
-      functions.logger.info(`>> Dispatch ${reservations.length} jobs`);
-      await Promise.all(
-        reservations.map(async reservation => {
-          await got.post(bookTicketUrl, {
-            json: reservation,
-          });
-        }),
-      );
-    });
+    const bookDate = getAsiaTaiPeiDate();
+    await handleDispatchReservations(bookDate);
   });
 
-export const dispatchReservationsAtOneClockEveryTenMinutes = functionBase
-  .runWith({
-    secrets: [secrets.DATABASE_URL],
-    timeoutSeconds: secondsInMinute,
-  })
-  .pubsub.schedule('*/10 1 * * *')
-  .timeZone(asiaTaiPei)
-  .onRun(async () => {
-    await withPrisma(async prisma => {
-      const bookDate = getAsiaTaiPeiDate();
-      const reservations = await prisma.reservation.findMany({
-        where: {
-          bookDate,
-          isDeleted: false,
-          ticketResult: null,
-        },
-      });
-      const bookTicketUrl = getBookTicketUrl();
-      functions.logger.info(`>> Dispatch ${reservations.length} jobs`);
-      await Promise.all(
-        reservations.map(async reservation => {
-          await got.post(bookTicketUrl, {
-            json: reservation,
-          });
-        }),
-      );
-    });
-  });
 export const dispatchReservationsOnRequest = functionBase
   .runWith({
     secrets: [secrets.DATABASE_URL],
-    timeoutSeconds: secondsInMinute,
+    timeoutSeconds: dispatchTimeout,
   })
   .https.onRequest(async (request, response) => {
-    await withPrisma(async prisma => {
-      const bookDate = getAsiaTaiPeiDate();
-      const reservations = await prisma.reservation.findMany({
-        where: {
-          bookDate,
-          isDeleted: false,
-          ticketResult: null,
-        },
-      });
-      const bookTicketUrl = getBookTicketUrl();
-      functions.logger.info(`>> Dispatch ${reservations.length} jobs`);
-      await Promise.all(
-        reservations.map(async reservation => {
-          await got.post(bookTicketUrl, {
-            json: reservation,
-          });
-        }),
-      );
-      response.json({counts: reservations.length, data: reservations});
-    });
+    const bookDate = getAsiaTaiPeiDate();
+    const reservations = await handleDispatchReservations(bookDate);
+    response.json({counts: reservations.length, data: reservations});
   });
 
+const bookTicketTimeout = secondsInMinute * 5;
 export const bookTicket = functionBase
   .runWith({
-    timeoutSeconds: secondsInMinute * 5,
+    timeoutSeconds: bookTicketTimeout,
     secrets: [
       secrets.DATABASE_URL,
       secrets.CAPTCHA_SOLVER,
       secrets.CAPTCHA_KEY,
     ],
+    maxInstances,
   })
   .https.onRequest(async (request, response) => {
     const check = ticketFlowRequestSchema.safeParse(request.body);
@@ -183,18 +93,17 @@ export const bookTicket = functionBase
       return;
     }
     const reservationId = check.data.id;
-    response.send(`>> Start Booking ReservationId: ${reservationId}`);
     functions.logger.info(`>> Start Booking ReservationId: ${reservationId}`);
 
-    await withPrisma(async prisma => {
-      const retryOptions = {
-        delayMs: 500,
-        retryMaxAgeMs: millisecondsInMinute * 4.5,
-        startTime: Date.now(),
-      };
-      await retryIfThrow(
-        () => handleTicketFlow(check.data, prisma),
-        retryOptions,
-      );
-    });
+    const retryOptions = {
+      delayMs: millisecondsInSecond,
+      /**
+       * set retryMaxAgeMs = timeoutSeconds * 0.9 for avoiding timeout
+       */
+      retryMaxAgeMs: bookTicketTimeout * millisecondsInSecond,
+      startTime: Date.now(),
+    };
+    await retryIfThrow(() => handleTicketFlow(check.data), retryOptions);
+
+    response.send(`>> Success Booking ReservationId: ${reservationId}`);
   });

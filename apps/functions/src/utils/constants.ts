@@ -36,6 +36,7 @@ export const asiaEast = 'asia-east1';
 
 export const secrets = {
   DATABASE_URL: 'DATABASE_URL',
+  DATABASE_DIRECT_URL: 'DATABASE_DIRECT_URL',
   CAPTCHA_SOLVER: 'CAPTCHA_SOLVER',
   CAPTCHA_KEY: 'CAPTCHA_KEY',
 } as const;

@@ -12,4 +12,7 @@ module.exports = {
     sourceType: 'module', // Allows for the use of imports
   },
   ignorePatterns: ['build/**', '_isolated_/**'],
+  rules: {
+    'turbo/no-undeclared-env-vars': 'off',
+  },
 };
