@@ -13,8 +13,7 @@
     "lint": "run-p lint:style lint:type",
     "lint:style": "eslint --ext .js,.ts src",
     "lint:type": "tsc --noEmit",
-    "lint-fix": "pnpm lint:style --fix",
-    "postinstall": "pnpm run build"
+    "lint-fix": "pnpm lint:style --fix"
   },
   "dependencies": {
     "date-fns": "^2.29.3",

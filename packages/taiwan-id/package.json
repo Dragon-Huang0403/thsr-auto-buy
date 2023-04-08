@@ -12,8 +12,7 @@
     "lint": "run-p lint:style lint:type",
     "lint:style": "eslint --ext .js,.ts src",
     "lint:type": "tsc --noEmit",
-    "lint-fix": "pnpm lint:style --fix",
-    "postinstall": "npm run build"
+    "lint-fix": "pnpm lint:style --fix"
   },
   "devDependencies": {
     "@vitest/ui": "^0.29.7",
