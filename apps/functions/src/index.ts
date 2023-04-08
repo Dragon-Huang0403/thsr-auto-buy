@@ -50,16 +50,29 @@ export const dispatchReservationsBeforeMidnight = functionBase
     await handleDispatchReservations(bookDate, {waitUntilMidnight: true});
   });
 
-export const dispatchReservationsAtZeroToOneClockEveryFiveMinutes = functionBase
+export const dispatchReservationsFirstRound = functionBase
   .runWith({
     secrets: [secrets.DATABASE_URL],
     timeoutSeconds: dispatchTimeout,
   })
-  .pubsub.schedule('5,10,15,20,25,30,35,40,45,50,55 0-1 * * 1-5')
+  .pubsub.schedule('5,10,15,20,25,30 0 * * 1-5')
   .timeZone(asiaTaiPei)
   .onRun(async () => {
     const bookDate = getAsiaTaiPeiDate();
     await handleDispatchReservations(bookDate);
+  });
+
+export const dispatchReservationsSecondRound = functionBase
+  .runWith({
+    secrets: [secrets.DATABASE_URL],
+    timeoutSeconds: dispatchTimeout,
+  })
+  .pubsub.schedule('30,35,40,45,50,55 1 * * 1-5')
+  .timeZone(asiaTaiPei)
+  .onRun(async () => {
+    const bookDate = getAsiaTaiPeiDate();
+    // thsr will release some tickets during 01:30 AM ~ 01:50 AM
+    await handleDispatchReservations(bookDate, {selectSoldOut: true});
   });
 
 export const dispatchReservationsOnRequest = functionBase

@@ -3,13 +3,17 @@ import database from 'database';
 import {millisecondsInMinute} from 'date-fns';
 import * as functions from 'firebase-functions';
 import got from 'got';
-import ticketFlow from 'ticket-flow';
+import ticketFlow, {TicketFlowError} from 'ticket-flow';
 
-import {getFunctionUrl, waitingUntilSecond} from './helper';
+import {
+  getFunctionUrl,
+  isDoubleBookingError,
+  waitingUntilSecond,
+} from './helper';
 import {prisma, PrismaWithoutPgBouncer} from './prisma';
 import {ticketFlowRequestSchema} from './schema';
 
-const {Prisma} = database;
+const {TicketErrorType} = database;
 const {crawlDiscounts, crawlSpecialDays} = crawler;
 
 export const maxInstances = 99;
@@ -19,48 +23,86 @@ export async function handleTicketFlow(
   const {id: reservationId, ...ticketFlowRequest} = request;
   try {
     const ticketResult = await ticketFlow(ticketFlowRequest);
-    await prisma.ticketResult.create({
-      data: {
-        reservationId,
-        ticketId: ticketResult.ticketId,
-        trainNo: ticketResult.trainNo,
-        departureTime: ticketResult.departureTime,
-        arrivalTime: ticketResult.arrivalTime,
-        duration: ticketResult.duration,
-        totalPrice: ticketResult.totalPrice,
-      },
-    });
-    functions.logger.info(`>> Success, reservationId: ${reservationId}`);
-    return ticketResult;
+    const data = {
+      reservationId,
+      ticketId: ticketResult.ticketId,
+      trainNo: ticketResult.trainNo,
+      departureTime: ticketResult.departureTime,
+      arrivalTime: ticketResult.arrivalTime,
+      duration: ticketResult.duration,
+      totalPrice: ticketResult.totalPrice,
+    };
+    functions.logger.info(`>> Success, reservationId: ${reservationId}`, data);
+    await prisma.ticketResult.create({data});
+    return data;
   } catch (e) {
-    functions.logger.error(`>> Failed to Book ReservationId: ${reservationId}`);
-    functions.logger.error(e);
-    const error = e instanceof Error ? e : undefined;
+    functions.logger.error(
+      `>> Failed to Book ReservationId: ${reservationId}`,
+      e,
+    );
+
+    const error = e as Error;
+    const errorType =
+      error instanceof TicketFlowError ? error.type : TicketErrorType.unknown;
+
     await prisma.ticketError.create({
       data: {
+        errorType,
         reservationId,
         message: error?.message ?? '',
       },
     });
-    // In case race condition happens due to manually calling reserving function
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+
+    if (isDoubleBookingError(error)) {
       return;
     }
+
+    if (errorType === TicketErrorType.soldOut) {
+      await prisma.reservation.update({
+        where: {id: reservationId},
+        data: {
+          isSoldOut: true,
+        },
+      });
+      return;
+    }
+    if (errorType === TicketErrorType.badRequest) {
+      await prisma.reservation.update({
+        where: {id: reservationId},
+        data: {
+          isBadRequest: true,
+        },
+      });
+      return;
+    }
+
     throw e;
   }
 }
 
+type DispatchReservationOptions = {
+  selectSoldOut?: boolean;
+  waitUntilMidnight?: boolean;
+};
+
 export async function handleDispatchReservations(
   bookDate: Date,
-  {waitUntilMidnight} = {waitUntilMidnight: false},
+  options: DispatchReservationOptions = {},
 ) {
+  const {waitUntilMidnight = false, selectSoldOut = false} = options;
+
   const reservations = await prisma.reservation.findMany({
     where: {
       bookDate,
       isDeleted: false,
       ticketResult: null,
+      isBadRequest: false,
+      isSoldOut: selectSoldOut ? undefined : false,
     },
     take: maxInstances,
+    orderBy: {
+      createdAt: 'asc',
+    },
   });
   const bookTicketUrl = getFunctionUrl('bookTicket');
 

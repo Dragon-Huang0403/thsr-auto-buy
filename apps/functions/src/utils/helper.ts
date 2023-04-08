@@ -1,6 +1,8 @@
+import database from 'database';
 import {formatInTimeZone} from 'date-fns-tz';
 
 import {asiaEast, asiaTaiPei} from './constants';
+const {Prisma} = database;
 
 export function getAsiaTaiPeiDate() {
   const now = new Date();
@@ -55,4 +57,8 @@ export async function waitingUntilSecond(second: number) {
   while (new Date().getSeconds() < second) {
     await sleep(500);
   }
+}
+
+export function isDoubleBookingError(error: Error) {
+  return error instanceof Prisma.PrismaClientKnownRequestError;
 }
