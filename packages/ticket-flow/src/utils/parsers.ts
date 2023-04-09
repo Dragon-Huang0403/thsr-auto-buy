@@ -36,7 +36,10 @@ export function throwIfHasError(page: HTMLElement) {
   if (isCaptchaSolvedWrongError) {
     throw new TicketFlowError(TicketFlowErrorType.solvingCaptchaWrong);
   }
-  const isSoldOut = errorMessages.includes('座位已額滿');
+
+  const isSoldOut = ['座位已額滿', '已售完'].some(str =>
+    errorMessages.includes(str),
+  );
   if (isSoldOut) {
     throw new TicketFlowError(TicketFlowErrorType.soldOut);
   }
