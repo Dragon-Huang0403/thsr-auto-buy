@@ -44,6 +44,7 @@ export function throwIfHasError(page: HTMLElement) {
   const isBadRequest = [
     '去程您所選擇的日期超過目前開放預訂之日期',
     '請輸入正確車次號碼',
+    'TGo帳號失效或不存在',
   ].some(str => errorMessages.includes(str));
   if (isBadRequest) {
     throw new TicketFlowError(TicketFlowErrorType.badRequest, errorMessages);
