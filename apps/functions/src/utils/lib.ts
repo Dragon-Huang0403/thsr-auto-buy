@@ -82,13 +82,14 @@ export async function handleTicketFlow(
 type DispatchReservationOptions = {
   selectSoldOut?: boolean;
   waitUntilMidnight?: boolean;
+  retry?: boolean;
 };
 
 export async function handleDispatchReservations(
   bookDate: Date,
   options: DispatchReservationOptions = {},
 ) {
-  const {waitUntilMidnight = false, selectSoldOut = false} = options;
+  const {waitUntilMidnight, selectSoldOut, retry} = options;
 
   const reservations = await prisma.reservation.findMany({
     where: {
@@ -116,7 +117,7 @@ export async function handleDispatchReservations(
     reservations.map(reservation =>
       got
         .post(bookTicketUrl, {
-          json: {...reservation, waitUntilMidnight},
+          json: {...reservation, waitUntilMidnight, retry},
           timeout: {response: millisecondsInMinute},
         })
         // TODO: Handle timeout error

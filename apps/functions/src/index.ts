@@ -11,7 +11,10 @@ import {
   updateSpecialBookDays,
 } from './utils/lib';
 import {createPrismaClientWithoutPgBouncer} from './utils/prisma';
-import {ticketFlowRequestSchema} from './utils/schema';
+import {
+  dispatchReservationOptionsSchema,
+  ticketFlowRequestSchema,
+} from './utils/schema';
 
 const functionBase = functions.region(asiaEast);
 
@@ -50,7 +53,10 @@ export const dispatchReservationsBeforeMidnight = functionBase
   .onRun(async () => {
     const asiaTaiPeiDate = getAsiaTaiPeiDate();
     const bookDate = addDays(asiaTaiPeiDate, 1);
-    await handleDispatchReservations(bookDate, {waitUntilMidnight: true});
+    await handleDispatchReservations(bookDate, {
+      waitUntilMidnight: true,
+      retry: true,
+    });
   });
 
 export const dispatchReservationsFirstRound = functionBase
@@ -62,7 +68,7 @@ export const dispatchReservationsFirstRound = functionBase
   .timeZone(asiaTaiPei)
   .onRun(async () => {
     const bookDate = getAsiaTaiPeiDate();
-    await handleDispatchReservations(bookDate);
+    await handleDispatchReservations(bookDate, {retry: true});
   });
 
 export const dispatchReservationsSecondRound = functionBase
@@ -75,7 +81,10 @@ export const dispatchReservationsSecondRound = functionBase
   .onRun(async () => {
     const bookDate = getAsiaTaiPeiDate();
     // thsr will release some tickets during 01:30 AM ~ 01:50 AM
-    await handleDispatchReservations(bookDate, {selectSoldOut: true});
+    await handleDispatchReservations(bookDate, {
+      selectSoldOut: true,
+      retry: true,
+    });
   });
 
 export const dispatchReservationsOnRequest = functionBase
@@ -84,9 +93,10 @@ export const dispatchReservationsOnRequest = functionBase
     timeoutSeconds: dispatchTimeout,
   })
   .https.onRequest(async (request, response) => {
+    const options = dispatchReservationOptionsSchema.parse(request.query);
     const bookDate = getAsiaTaiPeiDate();
-    const reservations = await handleDispatchReservations(bookDate);
-    response.json({counts: reservations.length, data: reservations});
+    const reservations = await handleDispatchReservations(bookDate, options);
+    response.json({options, counts: reservations.length, data: reservations});
   });
 
 const bookTicketTimeout = secondsInMinute * 5;
@@ -108,18 +118,22 @@ export const bookTicket = functionBase
       response.status(400).send('Bad Request');
       return;
     }
-    const reservationId = check.data.id;
+    const {id: reservationId, retry} = check.data;
     functions.logger.info(`>> Start Booking ReservationId: ${reservationId}`);
 
-    const retryOptions = {
-      delayMs: millisecondsInSecond,
-      /**
-       * set retryMaxAgeMs = timeoutSeconds * 0.9 for avoiding timeout
-       */
-      retryMaxAgeMs: bookTicketTimeout * millisecondsInSecond,
-      startTime: Date.now(),
-    };
-    await retryIfThrow(() => handleTicketFlow(check.data), retryOptions);
+    if (retry) {
+      const retryOptions = {
+        delayMs: millisecondsInSecond,
+        /**
+         * set retryMaxAgeMs = timeoutSeconds * 0.9 for avoiding timeout
+         */
+        retryMaxAgeMs: bookTicketTimeout * millisecondsInSecond * 0.9,
+        startTime: Date.now(),
+      };
+      await retryIfThrow(() => handleTicketFlow(check.data), retryOptions);
+    } else {
+      await handleTicketFlow(check.data);
+    }
 
     response.send(`>> Success Booking ReservationId: ${reservationId}`);
   });

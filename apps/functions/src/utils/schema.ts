@@ -29,5 +29,17 @@ export const ticketFlowRequestSchema = z.object({
   elderTicket: z.number(),
   collegeTicket: z.number(),
   memberType: z.enum(memberTypes),
-  waitUntilMidnight: z.boolean().optional(),
+  waitUntilMidnight: z.boolean().default(false),
+  retry: z.boolean().default(false),
+});
+
+const booleanStringSchema = z
+  .string()
+  .default('')
+  .transform(str => str === 'true');
+
+export const dispatchReservationOptionsSchema = z.object({
+  waitUntilMidnight: booleanStringSchema,
+  retry: booleanStringSchema,
+  selectSoldOut: booleanStringSchema,
 });
