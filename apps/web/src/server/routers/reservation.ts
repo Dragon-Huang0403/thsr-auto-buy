@@ -36,7 +36,6 @@ const defaultReservationSelect = Prisma.validator<Prisma.ReservationSelect>()({
 
 export const reservationRouter = router({
   add: publicProcedure.input(reservationSchema).mutation(async ({input}) => {
-    // TODO: 檢查 trainNo 是否正確
     const {tickets, ...reservation} = input;
     const bookDate = await getBookDate(reservation.ticketDate);
 

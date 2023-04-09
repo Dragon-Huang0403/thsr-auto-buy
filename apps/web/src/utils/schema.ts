@@ -15,7 +15,7 @@ export const reservationSchema = z.object({
   endStation: z.enum(stations),
   ticketDate: z.date(),
   bookingMethod: z.enum(bookingMethods),
-  trainNo: z.string(),
+  trainNo: z.string().min(3).max(4),
   carType: z.enum(carTypes),
   seatType: z.enum(seatTypes),
   taiwanId: z
