@@ -33,7 +33,10 @@ export const updateTrainInfos = functionBase
 
     await prismaWithoutPgBouncer.$disconnect();
 
-    response.json({discounts, specialBookDay});
+    response.json({
+      discountCounts: discounts.length,
+      specialBookDayCounts: specialBookDay.length,
+    });
   });
 
 const dispatchTimeout = secondsInMinute * 2;
