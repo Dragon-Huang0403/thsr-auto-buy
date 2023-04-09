@@ -1,4 +1,4 @@
-import crawler from 'crawler';
+import {crawlDiscounts, crawlSpecialDays} from 'crawler';
 import database from 'database';
 import {millisecondsInMinute} from 'date-fns';
 import * as functions from 'firebase-functions';
@@ -14,7 +14,6 @@ import {prisma, PrismaWithoutPgBouncer} from './prisma';
 import {ticketFlowRequestSchema} from './schema';
 
 const {TicketErrorType} = database;
-const {crawlDiscounts, crawlSpecialDays} = crawler;
 
 export const maxInstances = 99;
 export async function handleTicketFlow(

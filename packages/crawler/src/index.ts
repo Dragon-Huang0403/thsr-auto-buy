@@ -1,12 +1,3 @@
-import type {CrawledDiscount} from './discount';
-import {crawlDiscounts} from './discount';
-import {crawlSpecialDays} from './specialDay';
-
-export {CrawledDiscount, crawlDiscounts, crawlSpecialDays};
-
-const crawler = {
-  crawlDiscounts,
-  crawlSpecialDays,
-};
-
-export default crawler;
+export type {CrawledDiscount} from './discount';
+export {crawlDiscounts} from './discount';
+export {crawlSpecialDays} from './specialDay';
