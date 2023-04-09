@@ -1,5 +1,5 @@
 # Database with PostgreSQL
 
-## Features
+## Database Tables
 
-- Database Models
+![](./dbdiagram.png)
