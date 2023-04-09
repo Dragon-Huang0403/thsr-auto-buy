@@ -1,5 +1,5 @@
 import {zodResolver} from '@hookform/resolvers/zod';
-import {SwapVert} from '@mui/icons-material';
+import SwapVertIcon from '@mui/icons-material/SwapVert';
 import {
   Box,
   Button,
@@ -137,7 +137,7 @@ const IndexPage: NextPageWithLayout = () => {
             }}
             onClick={swapStations}
           >
-            <SwapVert />
+            <SwapVertIcon />
           </IconButton>
         </Box>
         <Controller

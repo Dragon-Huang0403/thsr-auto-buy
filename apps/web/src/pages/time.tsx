@@ -1,5 +1,5 @@
 import {zodResolver} from '@hookform/resolvers/zod';
-import {SwapVert} from '@mui/icons-material';
+import SwapVertIcon from '@mui/icons-material/SwapVert';
 import {Box, Button, IconButton, styled, TextField} from '@mui/material';
 import {DatePicker, TimePicker} from '@mui/x-date-pickers';
 import {addMonths} from 'date-fns';
@@ -107,7 +107,7 @@ const TimePage: NextPageWithLayout = () => {
           }}
           onClick={swapStations}
         >
-          <SwapVert />
+          <SwapVertIcon />
         </IconButton>
       </Box>
       <Controller

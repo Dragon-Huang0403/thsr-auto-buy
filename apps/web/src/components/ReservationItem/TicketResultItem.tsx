@@ -1,4 +1,4 @@
-import {ContentCopy} from '@mui/icons-material';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import {Box, Button, IconButton, Typography} from '@mui/material';
 import {TicketResult} from '@prisma/client';
 import React from 'react';
@@ -27,7 +27,7 @@ function TicketResultItem({ticketResult}: Props) {
       <Box sx={{display: 'flex', gap: 1, alignItems: 'center'}}>
         <Typography>{`車票號碼：${ticketResult.ticketId}`}</Typography>
         <IconButton sx={{p: 0}} onClick={handleWriteTicketIdToClipboard}>
-          <ContentCopy fontSize="small" />
+          <ContentCopyIcon fontSize="small" />
         </IconButton>
       </Box>
       <Typography>{`車次號碼：${ticketResult.trainNo}`}</Typography>

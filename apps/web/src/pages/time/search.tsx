@@ -1,10 +1,8 @@
-import {
-  ArrowBackRounded,
-  DirectionsTransitRounded,
-  EastRounded,
-  KeyboardDoubleArrowRightRounded,
-  ScheduleRounded,
-} from '@mui/icons-material';
+import ArrowBackRounded from '@mui/icons-material/ArrowBackRounded';
+import DirectionsTransitRounded from '@mui/icons-material/DirectionsTransitRounded';
+import EastRounded from '@mui/icons-material/EastRounded';
+import KeyboardDoubleArrowRightRounded from '@mui/icons-material/KeyboardDoubleArrowRightRounded';
+import ScheduleRounded from '@mui/icons-material/ScheduleRounded';
 import {
   Box,
   Button,
