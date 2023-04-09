@@ -2,6 +2,7 @@
  * This file contains tRPC's HTTP response handler
  */
 import * as trpcNext from '@trpc/server/adapters/next';
+import {addDays, differenceInSeconds} from 'date-fns';
 
 import {createContext} from '~/server/context';
 import {appRouter} from '~/server/routers/_app';
@@ -30,7 +31,24 @@ export default trpcNext.createNextApiHandler({
   /**
    * @link https://trpc.io/docs/caching#api-response-caching
    */
-  // responseMeta() {
-  //   // ...
-  // },
+  responseMeta({paths, type, errors}) {
+    const allTime = paths && paths.every(path => path.includes('time'));
+
+    // checking that no procedures errored
+    const allOk = errors.length === 0;
+    // checking we're doing a query request
+    const isQuery = type === 'query';
+    if (allTime && allOk && isQuery) {
+      // cache request for same day + revalidate once every second
+      const now = new Date();
+      const tomorrow = addDays(new Date(now.toISOString().slice(0, 10)), 1);
+      const diffSeconds = differenceInSeconds(tomorrow, now);
+      return {
+        headers: {
+          'cache-control': `s-maxage=1, stale-while-revalidate=${diffSeconds}`,
+        },
+      };
+    }
+    return {};
+  },
 });
