@@ -31,8 +31,15 @@ export async function sleep(time: number) {
 }
 
 export async function waitingUntilMidnight() {
-  while (formatInTimeZone(new Date(), timeZone, 'H') !== '0') {
+  let now = new Date();
+
+  // Wait until 00:00:01, because thsr will start count as next day after 00:00:01
+  while (
+    formatInTimeZone(now, timeZone, 'H') !== '0' &&
+    now.getSeconds() === 0
+  ) {
     await sleep(500);
+    now = new Date();
   }
 }
 
@@ -149,4 +156,11 @@ export function isCaptchaError(error: unknown) {
     return error.type === TicketFlowErrorType.solvingCaptchaWrong;
   }
   return false;
+}
+
+export function isSentTooEarlyError(error: unknown) {
+  if (!(error instanceof TicketFlowError)) {
+    return false;
+  }
+  return error.message.includes('去程您所選擇的日期超過目前開放預訂之日期');
 }
