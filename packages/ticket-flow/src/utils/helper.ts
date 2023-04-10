@@ -35,7 +35,7 @@ export async function waitingUntilMidnight() {
 
   // Wait until 00:00:01, because thsr will start count as next day after 00:00:01
   while (
-    formatInTimeZone(now, timeZone, 'H') !== '0' &&
+    formatInTimeZone(now, timeZone, 'H') !== '0' ||
     now.getSeconds() === 0
   ) {
     await sleep(500);
