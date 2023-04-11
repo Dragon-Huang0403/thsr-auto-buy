@@ -67,6 +67,9 @@ export const reservationRouter = router({
           ticketResult: true,
         },
       });
+      reservations.forEach(reservation => {
+        reservation.bookDate.setHours(0);
+      });
       return reservations;
     }),
   delete: publicProcedure
