@@ -3,6 +3,7 @@ import {addDays, differenceInDays, format} from 'date-fns';
 import {TableType} from './constants';
 import {
   CrawledDiscount,
+  CrawledDiscountWithTableType,
   DiscountDetail,
   DiscountType,
   RegularTrainItem,
@@ -27,7 +28,13 @@ function handleRegularTrainItem(
     const day = parseInt(format(date, 'i')) - 1;
     const detail = details[day];
     return detail
-      ? {minDiscountRatio: detail.minRatio, type, date, trainNo}
+      ? {
+          minDiscountRatio: detail.minRatio,
+          type,
+          date,
+          trainNo,
+          tableType: TableType.regular,
+        }
       : null;
   });
   return discounts;
@@ -46,12 +53,13 @@ function handleSpecialDayTrainItem(
     date,
     trainNo,
     minDiscountRatio: detail.minRatio,
+    tableType: TableType.specialDays,
   };
 }
 
 export function handleDiscountDetail(
   discountDetail: DiscountDetail,
-): CrawledDiscount[] {
+): CrawledDiscountWithTableType[] {
   const {startDate, endDate, discountType, trainItems} = discountDetail;
   const discounts = trainItems
     .map(trainItem => {
@@ -65,4 +73,19 @@ export function handleDiscountDetail(
     .filter(notEmpty);
 
   return discounts;
+}
+
+export function handleRepeatedDiscounts(
+  discounts: CrawledDiscountWithTableType[],
+): CrawledDiscount[] {
+  const hash: Record<string, CrawledDiscount> = {};
+  discounts.forEach(data => {
+    const {tableType, ...discount} = data;
+    const key = `${discount.date}${discount.type}${discount.trainNo}`;
+    if (key in hash && tableType === TableType.regular) {
+      return;
+    }
+    hash[key] = discount;
+  });
+  return Object.values(hash);
 }

@@ -1,6 +1,6 @@
 import {got} from 'got';
 
-import {handleDiscountDetail} from './utils/helpers';
+import {handleDiscountDetail, handleRepeatedDiscounts} from './utils/helpers';
 import {
   getDiscountDetails,
   getTrainTableUrls,
@@ -25,6 +25,7 @@ export async function crawlDiscounts() {
   ).flat();
 
   const details = discountDetails.map(handleDiscountDetail).flat();
+  const discounts = handleRepeatedDiscounts(details);
 
-  return details;
+  return discounts;
 }

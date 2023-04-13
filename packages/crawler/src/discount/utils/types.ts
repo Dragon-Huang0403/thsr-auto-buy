@@ -27,3 +27,7 @@ export type CrawledDiscount = {
   trainNo: number;
   minDiscountRatio: number;
 };
+
+export type CrawledDiscountWithTableType = CrawledDiscount & {
+  tableType: TableType;
+};
