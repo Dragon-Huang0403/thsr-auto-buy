@@ -1,7 +1,5 @@
 # Web (Frontend and API Server)
 
-[Website](https://thsr-auto-buy.vercel.app/)
-
 ## Features
 
 - Implement reserving booking ticket flow and validation

@@ -2,8 +2,6 @@
 
 ![](./assets/diagramming.png)
 
-<p align="center"><a href="https://thsr-auto-buy.vercel.app/">✨ https://thsr-auto-buy.vercel.app/ ✨ </a></p>
-
 ## Features
 
 - Implement both [frontend](./apps/web/README.md) and [serverless backend](./apps/functions/README.md) for reserving booking ticket
